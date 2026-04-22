@@ -38,6 +38,10 @@ import CommandPalette from "@/components/CommandPalette";
 import StatusRail from "@/components/StatusRail";
 import ClassifiedBriefing from "@/components/ClassifiedBriefing";
 import PortfolioMatrix from "@/components/PortfolioMatrix";
+import SovereignTerminal from "@/components/SovereignTerminal";
+import OmniChat from "@/components/OmniChat";
+import SymphonyPanel from "@/components/SymphonyPanel";
+import { useRouter } from "next/navigation";
 
 const SovereignCanvas3D = dynamic(
   () => import("@/components/SovereignCanvas3D"),
@@ -48,10 +52,13 @@ const SovereignCanvas = dynamic(() => import("@/components/SovereignCanvas"), {
   ssr: false,
 });
 
+type DashTab = "overview" | "command" | "war-room" | "activity" | "claws" | "omni";
+
 export default function DashboardPage() {
+  const router = useRouter();
   const [booted, setBooted] = useState(false);
   const [activeNav, setActiveNav] = useState("overview");
-  const [activeTab, setActiveTab] = useState<"overview" | "command" | "war-room" | "activity" | "claws">("overview");
+  const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [showPivot, setShowPivot] = useState(false);
   const [pivotReason, setPivotReason] = useState("");
   const [micActive, setMicActive] = useState(false);
@@ -76,6 +83,31 @@ export default function DashboardPage() {
     loop: true,
     interrupt: true,
   });
+
+  useEffect(() => {
+    const onTeleport = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { tab?: DashTab; route?: string };
+      if (detail?.route) {
+        router.push(detail.route);
+        return;
+      }
+      if (detail?.tab) {
+        setActiveTab(detail.tab);
+        setActiveNav(detail.tab === "omni" ? "omni" : detail.tab);
+      }
+    };
+    const onPivot = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { reason?: string };
+      setPivotReason(detail?.reason || "TERMINAL-TRIGGERED PIVOT");
+      setShowPivot(true);
+    };
+    window.addEventListener("sovereign:teleport", onTeleport);
+    window.addEventListener("sovereign:pivot", onPivot);
+    return () => {
+      window.removeEventListener("sovereign:teleport", onTeleport);
+      window.removeEventListener("sovereign:pivot", onPivot);
+    };
+  }, [router]);
 
   useEffect(() => {
     if (!booted) return;
@@ -224,6 +256,7 @@ export default function DashboardPage() {
       <SovereignChrome />
       <CommandPalette />
       <StatusRail />
+      <SovereignTerminal />
 
       <main
         ref={containerRef}
@@ -258,7 +291,7 @@ export default function DashboardPage() {
         {/* COMMAND TABS */}
         <div className="sticky top-14 z-39 backdrop-blur-3xl bg-obsidian/80 border-b border-gold/10">
           <div className="max-w-[2200px] mx-auto px-6 md:px-10 flex items-center gap-1 overflow-x-auto">
-            {(["overview", "command", "war-room", "activity", "claws"] as const).map((tab) => (
+            {(["overview", "command", "war-room", "activity", "claws", "omni"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -273,6 +306,7 @@ export default function DashboardPage() {
                 {tab === "war-room" && "🎙️ War Room"}
                 {tab === "activity" && "📡 Activity"}
                 {tab === "claws" && "🦾 Claw Control"}
+                {tab === "omni" && "🌐 Omni-Chat"}
               </button>
             ))}
           </div>
@@ -396,7 +430,13 @@ export default function DashboardPage() {
               <SovereignNav
                 icon={<Terminal size={16} />}
                 label="Terminal"
-                onClick={() => alert("ACCESS DENIED · SOVEREIGN L5 REQUIRED")}
+                onClick={() => window.dispatchEvent(new CustomEvent("sovereign:terminal:open"))}
+              />
+              <SovereignNav
+                icon={<Globe size={16} />}
+                label="Omni-Chat"
+                active={(activeTab as string) === "omni"}
+                onClick={() => setActiveTab("omni")}
               />
 
               <div className="mt-auto pt-4 border-t border-gold/10">
@@ -565,10 +605,10 @@ export default function DashboardPage() {
 
           {/* WAR ROOM TAB */}
           {activeTab === "war-room" && (
-            <div className="max-w-2xl mx-auto">
-              <div className="glass-panel sovereign-border p-12 text-center">
-                <div className="mb-8">
-                  <div className="w-32 h-32 mx-auto relative mb-6">
+            <div className="grid grid-cols-12 gap-4 lg:gap-6">
+              <div className="col-span-12 lg:col-span-4">
+                <div className="glass-panel sovereign-border p-8 text-center h-full flex flex-col items-center justify-center">
+                  <div className="w-32 h-32 relative mb-6">
                     <div className="absolute inset-0 rounded-full border-4 border-gold/20 animate-pulse" />
                     <div className="absolute inset-4 rounded-full border-4 border-cyan/20 animate-pulse" style={{ animationDelay: "0.2s" }} />
                     <button
@@ -582,15 +622,18 @@ export default function DashboardPage() {
                       {micActive ? <MicOff size={48} /> : <Mic size={48} />}
                     </button>
                   </div>
-                  <h2 className="font-orbitron text-3xl font-black text-gold uppercase tracking-widest mb-2">
+                  <h2 className="font-orbitron text-2xl font-black text-gold uppercase tracking-widest mb-2">
                     {micActive ? "🔴 LISTENING" : "🎙️ WAR ROOM"}
                   </h2>
-                  <p className="text-white/60 font-mono text-sm">
+                  <p className="text-white/60 font-mono text-xs">
                     {micActive
-                      ? "Waiting for commands... Say a general's name to activate"
+                      ? "Waiting for commands..."
                       : "Click to activate voice interface"}
                   </p>
                 </div>
+              </div>
+              <div className="col-span-12 lg:col-span-8">
+                <SymphonyPanel />
               </div>
             </div>
           )}
@@ -669,6 +712,26 @@ export default function DashboardPage() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* OMNI-CHAT TAB */}
+          {activeTab === "omni" && (
+            <div className="relative z-10">
+              <div className="mb-5 flex items-start justify-between flex-wrap gap-3">
+                <div>
+                  <h2 className="font-orbitron text-2xl font-black text-gold uppercase tracking-widest flex items-center gap-3">
+                    🌐 Sovereign Omni-Chat Hub
+                  </h2>
+                  <p className="font-mono text-[10px] text-white/40 tracking-widest uppercase mt-1">
+                    Unified bridge · Discord · Telegram · WhatsApp · Messenger · LLM Brain Swap
+                  </p>
+                </div>
+                <div className="font-mono text-[9px] text-white/30 tracking-widest uppercase">
+                  press <span className="kbd">`</span> to summon terminal · /teleport omni
+                </div>
+              </div>
+              <OmniChat />
             </div>
           )}
 
