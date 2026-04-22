@@ -21,7 +21,10 @@ from pydantic import BaseModel, Field
 
 from .bot_manager import FFMPEG_AVAILABLE, get_manager
 from .eleven_pool import get_pool
+from .grok_scout import scout as grok_scout
+from .llm_brain import provider_status
 from .personas import BY_SLUG, PERSONAS, all_slugs
+from .pulse import PULSE_PLAYBOOK, fire_pulse, list_focuses
 from .voice_queue import get_queue
 
 logger = logging.getLogger(__name__)
@@ -49,6 +52,19 @@ class SummonBody(BaseModel):
     general: str
     guild_id: int
     voice_channel_id: int
+
+
+class PulseBody(BaseModel):
+    focus: str = "dubai-blitz"
+    channel_id: Optional[int] = None
+    guild_id: Optional[int] = None
+    brain: str = "auto"
+    generals: Optional[List[str]] = None
+
+
+class GrokScoutBody(BaseModel):
+    query: str = Field(min_length=2, max_length=500)
+    max_tokens: int = 400
 
 
 def create_app() -> FastAPI:
@@ -187,5 +203,54 @@ def create_app() -> FastAPI:
         for _, bot in mgr.bots.items():
             await bot.voice_disconnect_all()
         return {"disbanded": True}
+
+    @app.get("/symphony/pulses")
+    async def pulses():
+        return {"focuses": list_focuses(), "brains": provider_status()}
+
+    @app.post("/symphony/pulse")
+    async def pulse(body: PulseBody):
+        focus = body.focus.lower()
+        if focus not in PULSE_PLAYBOOK:
+            raise HTTPException(400, f"unknown focus '{body.focus}' — valid: {', '.join(PULSE_PLAYBOOK)}")
+        mgr = get_manager()
+        live_slugs = {b["slug"] for b in mgr.roster()["live"]}
+        team = [s for s in (body.generals or PULSE_PLAYBOOK[focus].team) if s in live_slugs]
+        if not team:
+            raise HTTPException(503, "no live generals available for this pulse — check /symphony/status")
+
+        channel_id = body.channel_id or DEFAULT_WARROOM_CHANNEL
+        if not channel_id:
+            raise HTTPException(400, "channel_id required (or set DISCORD_WARROOM_CHANNEL_ID in .env)")
+
+        try:
+            result = await fire_pulse(
+                focus,
+                channel_id=channel_id,
+                guild_id=body.guild_id or DEFAULT_GUILD_ID,
+                brain_provider=body.brain,
+                generals_override=team,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.exception("pulse failed")
+            raise HTTPException(500, f"pulse failed: {e!r}")
+        return result
+
+    @app.post("/symphony/grok-scout")
+    async def grok_scout_endpoint(body: GrokScoutBody):
+        result = await grok_scout(body.query, max_tokens=body.max_tokens)
+        return {
+            "configured": result.configured,
+            "query": result.query,
+            "summary": result.summary,
+            "signals": result.signals,
+            "citations": result.citations,
+            "error": result.error,
+        }
+
+    @app.get("/symphony/voices")
+    async def voices():
+        """Lists voices actually available on the ElevenLabs account behind your keys."""
+        return await get_pool().list_voices()
 
     return app

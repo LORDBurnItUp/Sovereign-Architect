@@ -66,13 +66,41 @@ class ElevenLabsPool:
     def __init__(
         self,
         keys: Optional[List[str]] = None,
-        model_id: str = "eleven_multilingual_v2",
+        model_id: str = "eleven_turbo_v2_5",
     ):
         self.keys = keys if keys is not None else load_all_keys()
         self.model_id = model_id
         self._idx = 0
         self._lock = asyncio.Lock()
         self._suspended: dict[str, float] = {}  # key -> resume_epoch
+        self._account_voices: Optional[List[dict]] = None  # lazy cache
+        self._voice_remap: dict[str, str] = {}  # preferred_id -> working_id
+        self._paywall_flagged: set[str] = set()  # voice_ids known-paywalled
+
+    async def _ensure_account_voices(self) -> List[dict]:
+        if self._account_voices is not None:
+            return self._account_voices
+        info = await self.list_voices()
+        self._account_voices = info.get("voices") or []
+        logger.info("eleven_pool: account has %d voices", len(self._account_voices))
+        return self._account_voices
+
+    async def _fallback_voice_id(self, preferred: str) -> Optional[str]:
+        """Pick a user-available voice_id deterministically by the preferred's hash."""
+        if preferred in self._voice_remap:
+            return self._voice_remap[preferred]
+        voices = await self._ensure_account_voices()
+        if not voices:
+            return None
+        # Prefer non-paywalled voices in the account
+        pool = [v["voice_id"] for v in voices if v.get("voice_id") and v["voice_id"] not in self._paywall_flagged]
+        if not pool:
+            return None
+        idx = sum(ord(c) for c in preferred) % len(pool)
+        chosen = pool[idx]
+        self._voice_remap[preferred] = chosen
+        logger.info("eleven_pool: remapped voice %s -> %s (account fallback)", preferred[:8], chosen[:8])
+        return chosen
 
     def __repr__(self) -> str:
         return f"ElevenLabsPool(keys={len(self.keys)}, model={self.model_id})"
@@ -100,13 +128,49 @@ class ElevenLabsPool:
         self._suspended[key] = resume
         logger.warning("eleven_pool: suspended key ...%s (%s) for %ds", key[-6:], reason, self.COOLDOWN_SECONDS)
 
+    async def list_voices(self) -> dict:
+        """Return voices available on the user's actual ElevenLabs account.
+
+        Useful when default voice IDs return 402 'library voice' errors —
+        the user can see what they DO have access to and remap the personas.
+        """
+        if not self.keys:
+            return {"error": "no keys", "voices": []}
+        last_err = None
+        for key in self.keys[:3]:  # try up to 3 keys, they should share account
+            try:
+                timeout = aiohttp.ClientTimeout(total=15)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(
+                        f"{self.BASE_URL}/voices",
+                        headers={"xi-api-key": key, "accept": "application/json"},
+                    ) as resp:
+                        body = await resp.text()
+                        if resp.status == 200:
+                            import json as _json
+                            data = _json.loads(body)
+                            voices = [
+                                {
+                                    "voice_id": v.get("voice_id"),
+                                    "name": v.get("name"),
+                                    "category": v.get("category"),
+                                    "labels": v.get("labels") or {},
+                                }
+                                for v in data.get("voices", [])
+                            ]
+                            return {"count": len(voices), "voices": voices, "queried_with": f"...{key[-6:]}"}
+                        last_err = f"{resp.status}: {body[:180]}"
+            except Exception as e:  # noqa: BLE001
+                last_err = repr(e)
+        return {"error": last_err, "voices": []}
+
     async def synthesize(
         self,
         text: str,
         voice_id: str,
-        stability: float = 0.45,
+        stability: float = 0.35,
         similarity_boost: float = 0.75,
-        style: float = 0.15,
+        style: float = 0.20,
         use_speaker_boost: bool = True,
     ) -> bytes:
         """Return MP3 bytes. Raises RuntimeError if all keys exhausted."""
@@ -115,54 +179,78 @@ class ElevenLabsPool:
         if not self.keys:
             raise RuntimeError("eleven_pool: no API keys loaded (check .env)")
 
-        payload = {
-            "text": text,
-            "model_id": self.model_id,
-            "voice_settings": {
-                "stability": stability,
-                "similarity_boost": similarity_boost,
-                "style": style,
-                "use_speaker_boost": use_speaker_boost,
-            },
-        }
+        # If we've already remapped this preferred voice_id (paywall), use the remap
+        vid = self._voice_remap.get(voice_id, voice_id)
 
-        last_err: Optional[str] = None
-        max_attempts = max(len(self.keys), 1)
-        for _ in range(max_attempts):
-            key = await self._next_key()
-            if not key:
-                break
-            url = f"{self.BASE_URL}/text-to-speech/{voice_id}"
-            headers = {
-                "xi-api-key": key,
-                "accept": "audio/mpeg",
-                "content-type": "application/json",
+        async def _attempt(use_vid: str) -> Optional[bytes]:
+            payload = {
+                "text": text,
+                "model_id": self.model_id,
+                "voice_settings": {
+                    "stability": stability,
+                    "similarity_boost": similarity_boost,
+                    "style": style,
+                    "use_speaker_boost": use_speaker_boost,
+                },
             }
-            try:
-                timeout = aiohttp.ClientTimeout(total=60)
-                async with aiohttp.ClientSession(timeout=timeout) as session:
-                    async with session.post(url, json=payload, headers=headers) as resp:
-                        if resp.status == 200:
-                            return await resp.read()
-                        body = await resp.text()
-                        if resp.status in (401, 403):
-                            await self._suspend(key, f"auth {resp.status}")
-                            last_err = f"auth {resp.status}: {body[:120]}"
-                            continue
-                        if resp.status == 429:
-                            await self._suspend(key, "rate-limited")
-                            last_err = f"429: {body[:120]}"
-                            continue
-                        last_err = f"{resp.status}: {body[:200]}"
-                        logger.warning("eleven_pool: %s on key ...%s", last_err, key[-6:])
-            except asyncio.TimeoutError:
-                last_err = "timeout"
-                logger.warning("eleven_pool: timeout on key ...%s", key[-6:])
-            except Exception as e:  # noqa: BLE001
-                last_err = f"exception: {e!r}"
-                logger.exception("eleven_pool: unexpected error on key ...%s", key[-6:])
+            nonlocal_last: Optional[str] = None
+            max_attempts = max(len(self.keys), 1)
+            paywalled = False
+            for _ in range(max_attempts):
+                key = await self._next_key()
+                if not key:
+                    break
+                url = f"{self.BASE_URL}/text-to-speech/{use_vid}"
+                headers = {"xi-api-key": key, "accept": "audio/mpeg", "content-type": "application/json"}
+                try:
+                    timeout = aiohttp.ClientTimeout(total=60)
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        async with session.post(url, json=payload, headers=headers) as resp:
+                            if resp.status == 200:
+                                return await resp.read()
+                            body = await resp.text()
+                            if resp.status == 402:
+                                paywalled = True
+                                nonlocal_last = f"402: {body[:160]}"
+                                logger.warning("eleven_pool: 402 paywall on voice %s", use_vid[:8])
+                                break  # switching voice, not key
+                            if resp.status in (401, 403):
+                                await self._suspend(key, f"auth {resp.status}")
+                                nonlocal_last = f"auth {resp.status}: {body[:120]}"
+                                continue
+                            if resp.status == 429:
+                                await self._suspend(key, "rate-limited")
+                                nonlocal_last = f"429: {body[:120]}"
+                                continue
+                            nonlocal_last = f"{resp.status}: {body[:200]}"
+                            logger.warning("eleven_pool: %s on key ...%s", nonlocal_last, key[-6:])
+                except asyncio.TimeoutError:
+                    nonlocal_last = "timeout"
+                    logger.warning("eleven_pool: timeout on key ...%s", key[-6:])
+                except Exception as e:  # noqa: BLE001
+                    nonlocal_last = f"exception: {e!r}"
+                    logger.exception("eleven_pool: unexpected error on key ...%s", key[-6:])
+            if paywalled:
+                self._paywall_flagged.add(use_vid)
+                raise _PaywallError(nonlocal_last or "402")
+            raise RuntimeError(f"eleven_pool: all keys failed — last error: {nonlocal_last}")
 
-        raise RuntimeError(f"eleven_pool: all keys failed — last error: {last_err}")
+        try:
+            return await _attempt(vid)
+        except _PaywallError:
+            fallback = await self._fallback_voice_id(vid)
+            if not fallback or fallback == vid:
+                raise RuntimeError(
+                    f"eleven_pool: voice {vid[:8]} is a paid-plan 'library' voice and no free voice "
+                    f"in your account worked as fallback. Either upgrade your ElevenLabs plan or "
+                    f"update personas.py DEFAULT_ELEVEN_VOICES with voice IDs from GET /symphony/voices."
+                )
+            logger.info("eleven_pool: paywall fallback %s -> %s", vid[:8], fallback[:8])
+            return await _attempt(fallback)
+
+
+class _PaywallError(Exception):
+    pass
 
 
 _singleton: Optional[ElevenLabsPool] = None

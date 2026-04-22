@@ -14,6 +14,9 @@ const TELEPORT_TARGETS = [
   "war-room",
   "war_room",
   "warroom",
+  "blitz",
+  "dubai",
+  "dubai-blitz",
   "activity",
   "claws",
   "omni",
@@ -23,6 +26,8 @@ const TELEPORT_TARGETS = [
   "briefings",
   "portfolio",
   "radar",
+  "symphony",
+  "generals",
   "home",
   "landing",
 ] as const;
@@ -46,6 +51,9 @@ const TELEPORT_MAP: Record<string, { tab?: string; route?: string; label: string
   landing: { route: "/", label: "Landing / Ingress" },
   symphony: { tab: "war-room", label: "War Room / Symphony" },
   generals: { tab: "war-room", label: "War Room / Symphony" },
+  blitz: { tab: "blitz", label: "Dubai Blitz" },
+  dubai: { tab: "blitz", label: "Dubai Blitz" },
+  "dubai-blitz": { tab: "blitz", label: "Dubai Blitz" },
 };
 
 const BANNER = [
@@ -163,9 +171,11 @@ export default function SovereignTerminal() {
             { kind: "sys", text: "║ /swarm_status          agent swarm diagnostics" },
             { kind: "sys", text: "║ /omni                  jump to Omni-Chat Hub" },
             { kind: "sys", text: "║ /pivot                 trigger hard pivot alert" },
-            { kind: "sys", text: "║ /brain <gemma|claude|gpt>   set LLM brain" },
+            { kind: "sys", text: "║ /brain <groq|claude|gpt|grok|gemma>   set LLM brain" },
             { kind: "sys", text: "║ /seed <community>      dispatch growth seed" },
             { kind: "sys", text: "║ /trial <handle>        issue free trial token" },
+            { kind: "sys", text: "║ /pulse <focus>         fire sovereign pulse (dubai-blitz|baja|general)" },
+            { kind: "sys", text: "║ /grok <query>          scout X via Grok (needs XAI_API_KEY)" },
             { kind: "sys", text: "║ /clear                 clear terminal" },
             { kind: "sys", text: "║ /exit                  close terminal" },
             { kind: "sys", text: "╚════════════════════════════════════════════════════" },
@@ -257,13 +267,78 @@ export default function SovereignTerminal() {
           break;
 
         case "brain":
-          if (!["gemma", "claude", "gpt"].includes(arg.toLowerCase())) {
-            push("err", "usage: /brain <gemma|claude|gpt>");
+          if (!["gemma", "claude", "gpt", "grok", "groq"].includes(arg.toLowerCase())) {
+            push("err", "usage: /brain <groq|gemma|claude|gpt|grok>");
           } else {
             window.dispatchEvent(
               new CustomEvent("sovereign:brain", { detail: { brain: arg.toLowerCase() } })
             );
             push("ok", `◈ brain switched → ${arg.toUpperCase()}`);
+          }
+          break;
+
+        case "pulse":
+          {
+            const focus = (arg || "dubai-blitz").toLowerCase().trim();
+            const norm =
+              focus === "dubai" || focus === "blitz" || focus === "dubai-blitz" ? "dubai-blitz" :
+              focus === "baja" || focus === "ensenada" || focus === "baja-ensenada" ? "baja-ensenada" :
+              focus === "general" || focus === "status" ? "general" :
+              focus;
+            push("sys", `… firing sovereign pulse → ${norm}`);
+            try {
+              const res = await fetch("/api/symphony/pulse", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ focus: norm }),
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                push("err", `✖ pulse failed: ${data.detail || data.error || res.status}`);
+              } else {
+                push("ok", `◈ pulse '${data.focus}' dispatched · ${data.team.length} generals · queue=${data.queue_depth_after}`);
+                if (data.scout) {
+                  if (data.scout.configured) {
+                    push("sys", `  grok: live · ${data.scout.summary?.slice(0, 180) || ""}`);
+                  } else {
+                    push("sys", `  grok: baseline (no XAI_API_KEY yet)`);
+                  }
+                }
+                (data.dispatched || []).slice(0, 6).forEach((d: { general: string; text: string }) => {
+                  push("sys", `  ${d.general.padEnd(14)} → ${d.text.slice(0, 160)}`);
+                });
+              }
+            } catch {
+              push("err", "✖ symphony offline — start start_symphony.bat");
+            }
+            // Also open the War Room so the user can watch the queue drain
+            window.dispatchEvent(new CustomEvent("sovereign:teleport", { detail: { tab: "war-room" } }));
+          }
+          break;
+
+        case "grok":
+        case "scout":
+          if (!arg) {
+            push("err", "usage: /grok <query>");
+          } else {
+            push("sys", `… scouting X via grok: ${arg}`);
+            try {
+              const res = await fetch("/api/symphony/grok-scout", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ query: arg }),
+              });
+              const data = await res.json();
+              if (!data.configured) {
+                push("err", "✖ grok not configured — add XAI_API_KEY (or GROK_API_KEY) to .env and restart symphony");
+                if (data.summary) push("sys", `  baseline: ${data.summary}`);
+              }
+              if (data.summary) push("ok", `◈ ${data.summary}`);
+              (data.signals || []).slice(0, 6).forEach((s: string) => push("sys", `  · ${s}`));
+              (data.citations || []).slice(0, 3).forEach((c: string) => push("sys", `  ↳ ${c}`));
+            } catch {
+              push("err", "✖ symphony offline");
+            }
           }
           break;
 

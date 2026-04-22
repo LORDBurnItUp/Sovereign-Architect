@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 type Provider = "discord" | "telegram" | "whatsapp" | "messenger" | "global";
-type Brain = "gemma" | "claude" | "gpt";
+type Brain = "groq" | "claude" | "gpt" | "grok";
 
 type Msg = {
   id: string;
@@ -35,9 +35,10 @@ const PROVIDERS: { id: Provider; label: string; color: string; glyph: string; br
 ];
 
 const BRAINS: { id: Brain; label: string; tag: string; color: string }[] = [
-  { id: "gemma",  label: "Gemma 4 · 26B", tag: "local", color: "text-matrix" },
-  { id: "claude", label: "Claude Opus 4.7", tag: "api", color: "text-amber-300" },
-  { id: "gpt",    label: "GPT-4o", tag: "api", color: "text-cyan-300" },
+  { id: "groq",   label: "Groq · Llama-3.3 70B", tag: "fast", color: "text-matrix" },
+  { id: "claude", label: "Claude Haiku 4.5", tag: "api", color: "text-amber-300" },
+  { id: "gpt",    label: "GPT-4o-mini", tag: "api", color: "text-cyan-300" },
+  { id: "grok",   label: "Grok · xAI", tag: "x-live", color: "text-violet-300" },
 ];
 
 let mid = 0;
@@ -49,7 +50,7 @@ function fmtTime(d: Date = new Date()) {
 
 export default function OmniChat() {
   const [provider, setProvider] = useState<Provider>("global");
-  const [brain, setBrain] = useState<Brain>("gemma");
+  const [brain, setBrain] = useState<Brain>("groq");
   const [messages, setMessages] = useState<Record<Provider, Msg[]>>({
     global: [],
     discord: [],
@@ -111,26 +112,55 @@ export default function OmniChat() {
 
   useEffect(() => {
     if (!autoSeed) return;
-    const t = setInterval(() => {
-      const seeds = AGENT_SEEDS;
-      const s = seeds[Math.floor(Math.random() * seeds.length)];
-      setMessages((prev) => ({
-        ...prev,
-        [provider]: [
-          ...prev[provider],
-          {
-            id: nextId(),
-            provider,
-            author: s.agent,
-            kind: "seed",
-            text: s.copy,
-            ts: fmtTime(),
-          },
-        ],
-      }));
-    }, 7000);
-    return () => clearInterval(t);
-  }, [autoSeed, provider]);
+    let cancelled = false;
+    const tick = async () => {
+      if (cancelled) return;
+      try {
+        const r = await fetch("/api/growth/seed", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ community: provider, brain, offer: "dubai-50usd-intro" }),
+        });
+        const data = await r.json();
+        if (cancelled) return;
+        setMessages((prev) => ({
+          ...prev,
+          [provider]: [
+            ...prev[provider],
+            {
+              id: nextId(),
+              provider,
+              author: data.agent || "HERMES",
+              kind: "seed",
+              text: data.copy || "◈ sovereign beta · drop your handle",
+              ts: fmtTime(),
+            },
+          ],
+        }));
+        // If we're on the Discord channel (real bridge available via Symphony), post it for real.
+        if (provider === "discord" && data.agent) {
+          const general = String(data.agent).toLowerCase();
+          fetch("/api/symphony/speak", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ general, text: data.copy }),
+          }).catch(() => {});
+        }
+      } catch {
+        if (cancelled) return;
+        const fallback = AGENT_SEEDS[Math.floor(Math.random() * AGENT_SEEDS.length)];
+        setMessages((prev) => ({
+          ...prev,
+          [provider]: [
+            ...prev[provider],
+            { id: nextId(), provider, author: fallback.agent, kind: "seed", text: fallback.copy, ts: fmtTime() },
+          ],
+        }));
+      }
+    };
+    const t = setInterval(tick, 7000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [autoSeed, provider, brain]);
 
   const send = useCallback(async () => {
     const text = input.trim();

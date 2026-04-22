@@ -117,7 +117,8 @@
       "PowerShell(npm run *)",
       "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3020/\" -UseBasicParsing -TimeoutSec 30 -ErrorAction SilentlyContinue; Write-Output \"LANDING: $\\($r.StatusCode\\) · $\\($r.RawContentLength\\) bytes\"; $r2 = Invoke-WebRequest -Uri \"http://localhost:3020/dashboard\" -UseBasicParsing -TimeoutSec 60 -ErrorAction SilentlyContinue; Write-Output \"DASHBOARD: $\\($r2.StatusCode\\) · $\\($r2.RawContentLength\\) bytes\"; try { $r3 = Invoke-WebRequest -Uri \"http://localhost:3020/api/growth/seed\" -UseBasicParsing -TimeoutSec 20; Write-Output \"GROWTH GET: $\\($r3.StatusCode\\) · $\\($r3.Content.Substring\\(0, [Math]::Min\\(200, $r3.Content.Length\\)\\)\\)\" } catch { Write-Output \"GROWTH GET err: $_\" })",
       "PowerShell(Get-Command *)",
-      "PowerShell($env:SOVEREIGN_SYMPHONY_PORT='5055'; $env:SOVEREIGN_SYMPHONY_HOST='127.0.0.1'; $env:SOVEREIGN_SYMPHONY_LOG='INFO'; Set-Location 'C:\\\\Users\\\\user\\\\make me a 10dll site'; python -m sovereign_symphony.main 2>&1)"
+      "PowerShell($env:SOVEREIGN_SYMPHONY_PORT='5055'; $env:SOVEREIGN_SYMPHONY_HOST='127.0.0.1'; $env:SOVEREIGN_SYMPHONY_LOG='INFO'; Set-Location 'C:\\\\Users\\\\user\\\\make me a 10dll site'; python -m sovereign_symphony.main 2>&1)",
+      "PowerShell(Get-NetTCPConnection *)"
     ]
   }
 }

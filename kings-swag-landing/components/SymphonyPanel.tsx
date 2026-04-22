@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Send, Loader2, Megaphone, Radio } from "lucide-react";
+import { Send, Loader2, Megaphone, Radio, Zap, Flame } from "lucide-react";
 
 type General = {
   slug: string;
@@ -34,6 +34,9 @@ export default function SymphonyPanel() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [pulseFocuses, setPulseFocuses] = useState<{ slug: string; title: string }[]>([]);
+  const [pulseBusy, setPulseBusy] = useState<string | null>(null);
+  const [lastPulse, setLastPulse] = useState<{ focus: string; team: string[]; scout_configured: boolean } | null>(null);
 
   const fetchRoster = useCallback(async () => {
     try {
@@ -57,6 +60,47 @@ export default function SymphonyPanel() {
     const t = setInterval(fetchRoster, 3000);
     return () => clearInterval(t);
   }, [fetchRoster]);
+
+  useEffect(() => {
+    fetch("/api/symphony/pulses")
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d.focuses) && setPulseFocuses(d.focuses))
+      .catch(() => {});
+  }, []);
+
+  const firePulse = useCallback(async (focus: string) => {
+    setPulseBusy(focus);
+    setErr(null);
+    try {
+      const r = await fetch("/api/symphony/pulse", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ focus }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || data.error || `status ${r.status}`);
+      setLastPulse({
+        focus: data.focus,
+        team: data.team || [],
+        scout_configured: !!data.scout?.configured,
+      });
+      await fetchRoster();
+    } catch (e) {
+      setErr(String(e));
+    } finally {
+      setPulseBusy(null);
+    }
+  }, [fetchRoster]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { focus?: string };
+      const focus = detail?.focus || "dubai-blitz";
+      firePulse(focus);
+    };
+    window.addEventListener("sovereign:pulse", handler);
+    return () => window.removeEventListener("sovereign:pulse", handler);
+  }, [firePulse]);
 
   const speak = useCallback(async () => {
     if (!text.trim() || !selected) return;
@@ -127,6 +171,53 @@ export default function SymphonyPanel() {
             tts keys: {status?.eleven_pool.keys_usable ?? "?"}/{status?.eleven_pool.keys_total ?? "?"}
           </span>
         </div>
+      </div>
+
+      <div className="p-4 border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-gold/10 to-amber-500/10 relative overflow-hidden">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <Flame size={16} className="text-amber-300 animate-pulse" />
+            <span className="font-orbitron text-[11px] font-black uppercase tracking-[0.3em] text-amber-200">
+              Sovereign Pulse
+            </span>
+            <span className="font-mono text-[9px] text-white/40 tracking-widest">
+              one-shot briefing · all relevant generals · no-overlap
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {pulseFocuses.length === 0 && (
+              <span className="font-mono text-[10px] text-white/30 tracking-widest">loading focuses…</span>
+            )}
+            {pulseFocuses.map((f) => {
+              const isDubai = f.slug === "dubai-blitz";
+              return (
+                <button
+                  key={f.slug}
+                  onClick={() => firePulse(f.slug)}
+                  disabled={!!pulseBusy}
+                  title={f.title}
+                  className={`px-3 py-2 border font-orbitron text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40 flex items-center gap-2 ${
+                    isDubai
+                      ? "border-amber-400 text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 shadow-[0_0_25px_rgba(251,191,36,0.25)]"
+                      : "border-gold/40 text-gold hover:bg-gold/10"
+                  }`}
+                >
+                  {pulseBusy === f.slug ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
+                  {f.slug}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {lastPulse && (
+          <div className="mt-2 font-mono text-[10px] text-white/60 tracking-widest uppercase">
+            last pulse: <span className="text-amber-200">{lastPulse.focus}</span> → {lastPulse.team.join(" · ")}
+            {" · "}
+            <span className={lastPulse.scout_configured ? "text-matrix" : "text-white/40"}>
+              grok: {lastPulse.scout_configured ? "live" : "baseline (no XAI_API_KEY)"}
+            </span>
+          </div>
+        )}
       </div>
 
       {err && (

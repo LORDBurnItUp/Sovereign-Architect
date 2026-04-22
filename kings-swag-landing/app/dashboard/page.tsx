@@ -41,6 +41,8 @@ import PortfolioMatrix from "@/components/PortfolioMatrix";
 import SovereignTerminal from "@/components/SovereignTerminal";
 import OmniChat from "@/components/OmniChat";
 import SymphonyPanel from "@/components/SymphonyPanel";
+import WarRoomMic from "@/components/WarRoomMic";
+import DubaiBlitzTab from "@/components/DubaiBlitzTab";
 import { useRouter } from "next/navigation";
 
 const SovereignCanvas3D = dynamic(
@@ -52,7 +54,7 @@ const SovereignCanvas = dynamic(() => import("@/components/SovereignCanvas"), {
   ssr: false,
 });
 
-type DashTab = "overview" | "command" | "war-room" | "activity" | "claws" | "omni";
+type DashTab = "overview" | "command" | "war-room" | "activity" | "claws" | "omni" | "blitz";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -291,7 +293,7 @@ export default function DashboardPage() {
         {/* COMMAND TABS */}
         <div className="sticky top-14 z-39 backdrop-blur-3xl bg-obsidian/80 border-b border-gold/10">
           <div className="max-w-[2200px] mx-auto px-6 md:px-10 flex items-center gap-1 overflow-x-auto">
-            {(["overview", "command", "war-room", "activity", "claws", "omni"] as const).map((tab) => (
+            {(["overview", "command", "war-room", "blitz", "activity", "claws", "omni"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -304,6 +306,7 @@ export default function DashboardPage() {
                 {tab === "overview" && "📊 Overview"}
                 {tab === "command" && "⚡ Command"}
                 {tab === "war-room" && "🎙️ War Room"}
+                {tab === "blitz" && "🔥 Dubai Blitz"}
                 {tab === "activity" && "📡 Activity"}
                 {tab === "claws" && "🦾 Claw Control"}
                 {tab === "omni" && "🌐 Omni-Chat"}
@@ -607,30 +610,7 @@ export default function DashboardPage() {
           {activeTab === "war-room" && (
             <div className="grid grid-cols-12 gap-4 lg:gap-6">
               <div className="col-span-12 lg:col-span-4">
-                <div className="glass-panel sovereign-border p-8 text-center h-full flex flex-col items-center justify-center">
-                  <div className="w-32 h-32 relative mb-6">
-                    <div className="absolute inset-0 rounded-full border-4 border-gold/20 animate-pulse" />
-                    <div className="absolute inset-4 rounded-full border-4 border-cyan/20 animate-pulse" style={{ animationDelay: "0.2s" }} />
-                    <button
-                      onClick={toggleMic}
-                      className={`absolute inset-8 rounded-full flex items-center justify-center transition-all ${
-                        micActive
-                          ? "bg-alert/20 border-2 border-alert text-alert shadow-lg shadow-alert/50"
-                          : "bg-gold/10 border-2 border-gold text-gold hover:bg-gold/20"
-                      }`}
-                    >
-                      {micActive ? <MicOff size={48} /> : <Mic size={48} />}
-                    </button>
-                  </div>
-                  <h2 className="font-orbitron text-2xl font-black text-gold uppercase tracking-widest mb-2">
-                    {micActive ? "🔴 LISTENING" : "🎙️ WAR ROOM"}
-                  </h2>
-                  <p className="text-white/60 font-mono text-xs">
-                    {micActive
-                      ? "Waiting for commands..."
-                      : "Click to activate voice interface"}
-                  </p>
-                </div>
+                <WarRoomMic />
               </div>
               <div className="col-span-12 lg:col-span-8">
                 <SymphonyPanel />
@@ -714,6 +694,9 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {/* DUBAI BLITZ TAB */}
+          {activeTab === "blitz" && <DubaiBlitzTab />}
 
           {/* OMNI-CHAT TAB */}
           {activeTab === "omni" && (
