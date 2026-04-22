@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { getApiUrl } from "@/lib/api-config";
 
 interface StreamEntry {
   id: string;
@@ -103,7 +104,7 @@ export default function MoneyStream() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await fetch("http://localhost:5050/api/logs");
+        const res = await fetch(getApiUrl("/api/logs"));
         const json = await res.json();
         // If real data exists, surface it; otherwise keep mock
         if (Array.isArray(json.lines) && json.lines.length > 0) {

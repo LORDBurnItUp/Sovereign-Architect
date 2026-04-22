@@ -12,6 +12,7 @@ import {
   Loader2,
   Zap,
 } from "lucide-react";
+import { getApiUrl } from "@/lib/api-config";
 
 type Provider = "discord" | "telegram" | "whatsapp" | "messenger" | "global";
 type Brain = "groq" | "claude" | "gpt" | "grok";
@@ -79,7 +80,7 @@ export default function OmniChat() {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch(`/api/omnichat/messages?provider=${provider}`);
+        const res = await fetch(getApiUrl(`/api/omnichat/messages?provider=${provider}`));
         if (!res.ok) throw new Error(`status ${res.status}`);
         const data = (await res.json()) as Msg[];
         if (!cancelled) {
@@ -116,7 +117,7 @@ export default function OmniChat() {
     const tick = async () => {
       if (cancelled) return;
       try {
-        const r = await fetch("/api/growth/seed", {
+        const r = await fetch(getApiUrl("/api/growth/seed"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ community: provider, brain, offer: "dubai-50usd-intro" }),
@@ -140,7 +141,7 @@ export default function OmniChat() {
         // If we're on the Discord channel (real bridge available via Symphony), post it for real.
         if (provider === "discord" && data.agent) {
           const general = String(data.agent).toLowerCase();
-          fetch("/api/symphony/speak", {
+          fetch(getApiUrl("/api/symphony/speak"), {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ general, text: data.copy }),
@@ -179,7 +180,7 @@ export default function OmniChat() {
     setBusy(true);
 
     try {
-      const res = await fetch("/api/omnichat/send", {
+      const res = await fetch(getApiUrl("/api/omnichat/send"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider, brain, text }),
@@ -211,7 +212,7 @@ export default function OmniChat() {
 
   const dispatchSeed = useCallback(async () => {
     try {
-      const res = await fetch("/api/growth/seed", {
+      const res = await fetch(getApiUrl("/api/growth/seed"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ community: provider, brain }),
@@ -241,7 +242,7 @@ export default function OmniChat() {
 
   const issueTrial = useCallback(async () => {
     try {
-      const res = await fetch("/api/trial/issue", {
+      const res = await fetch(getApiUrl("/api/trial/issue"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ handle: `omnichat-${provider}-${Date.now()}` }),

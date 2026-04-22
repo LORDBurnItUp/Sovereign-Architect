@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getApiUrl } from "@/lib/api-config";
 
 interface Command {
   id: string;
@@ -95,7 +96,7 @@ export default function CommandPalette() {
         selected.action();
       } else {
         // Post action to the Python backend
-        fetch("http://localhost:5050/api/infra/commands", {
+        fetch(getApiUrl("/api/infra/commands"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: selected.id }),

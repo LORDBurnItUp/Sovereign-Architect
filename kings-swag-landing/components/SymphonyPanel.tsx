@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Send, Loader2, Megaphone, Radio, Zap, Flame } from "lucide-react";
+import { getApiUrl } from "@/lib/api-config";
 
 type General = {
   slug: string;
@@ -41,8 +42,8 @@ export default function SymphonyPanel() {
   const fetchRoster = useCallback(async () => {
     try {
       const [g, s] = await Promise.all([
-        fetch("/api/symphony/generals").then((r) => r.json()),
-        fetch("/api/symphony/status").then((r) => r.json()),
+        fetch(getApiUrl("/api/symphony/generals")).then((r) => r.json()),
+        fetch(getApiUrl("/api/symphony/status")).then((r) => r.json()),
       ]);
       if (Array.isArray(g.generals)) {
         setGenerals(g.generals);
@@ -62,7 +63,7 @@ export default function SymphonyPanel() {
   }, [fetchRoster]);
 
   useEffect(() => {
-    fetch("/api/symphony/pulses")
+    fetch(getApiUrl("/api/symphony/pulses"))
       .then((r) => r.json())
       .then((d) => Array.isArray(d.focuses) && setPulseFocuses(d.focuses))
       .catch(() => {});
@@ -72,7 +73,7 @@ export default function SymphonyPanel() {
     setPulseBusy(focus);
     setErr(null);
     try {
-      const r = await fetch("/api/symphony/pulse", {
+      const r = await fetch(getApiUrl("/api/symphony/pulse"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ focus }),
@@ -107,7 +108,7 @@ export default function SymphonyPanel() {
     setBusy(true);
     setErr(null);
     try {
-      const r = await fetch("/api/symphony/speak", {
+      const r = await fetch(getApiUrl("/api/symphony/speak"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ general: selected, text }),
@@ -128,7 +129,7 @@ export default function SymphonyPanel() {
     setBusy(true);
     setErr(null);
     try {
-      const r = await fetch("/api/symphony/broadcast", {
+      const r = await fetch(getApiUrl("/api/symphony/broadcast"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text }),

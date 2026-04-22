@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getApiUrl } from "@/lib/api-config";
 
 type Line = {
   id: string;
@@ -218,9 +219,9 @@ export default function SovereignTerminal() {
 
         case "swarm_status":
         case "swarm":
-          push("sys", "… querying sovereign swarm at localhost:5050 …");
+          push("sys", `… querying sovereign swarm at ${getApiUrl("")} …`);
           try {
-            const res = await fetch("http://localhost:5050/api/agent_hive");
+            const res = await fetch(getApiUrl("/api/agent_hive"));
             if (!res.ok) throw new Error(`status ${res.status}`);
             const data = await res.json();
             const agents = Array.isArray(data) ? data : [];
@@ -287,7 +288,7 @@ export default function SovereignTerminal() {
               focus;
             push("sys", `… firing sovereign pulse → ${norm}`);
             try {
-              const res = await fetch("/api/symphony/pulse", {
+              const res = await fetch(getApiUrl("/api/symphony/pulse"), {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ focus: norm }),
@@ -323,7 +324,7 @@ export default function SovereignTerminal() {
           } else {
             push("sys", `… scouting X via grok: ${arg}`);
             try {
-              const res = await fetch("/api/symphony/grok-scout", {
+              const res = await fetch(getApiUrl("/api/symphony/grok-scout"), {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ query: arg }),
@@ -348,7 +349,7 @@ export default function SovereignTerminal() {
           } else {
             push("sys", `… dispatching growth seed to ${arg} …`);
             try {
-              const res = await fetch("/api/growth/seed", {
+              const res = await fetch(getApiUrl("/api/growth/seed"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ community: arg }),
@@ -367,7 +368,7 @@ export default function SovereignTerminal() {
             push("err", "usage: /trial <handle>");
           } else {
             try {
-              const res = await fetch("/api/trial/issue", {
+              const res = await fetch(getApiUrl("/api/trial/issue"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ handle: arg }),

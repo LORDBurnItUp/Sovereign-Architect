@@ -44,6 +44,7 @@ import SymphonyPanel from "@/components/SymphonyPanel";
 import WarRoomMic from "@/components/WarRoomMic";
 import DubaiBlitzTab from "@/components/DubaiBlitzTab";
 import { useRouter } from "next/navigation";
+import { getApiUrl } from "@/lib/api-config";
 
 const SovereignCanvas3D = dynamic(
   () => import("@/components/SovereignCanvas3D"),
@@ -158,7 +159,7 @@ export default function DashboardPage() {
 
     const checkPivot = async () => {
       try {
-        const res = await fetch("http://localhost:5050/api/agent_hive");
+        const res = await fetch(getApiUrl("/api/agent_hive"));
         const json = await res.json();
         const alertAgent = json.find((a: { status: string }) => a.status === "ALERT");
         if (alertAgent) {
@@ -173,7 +174,7 @@ export default function DashboardPage() {
     // Activity log polling
     const pollActivity = async () => {
       try {
-        const res = await fetch("http://localhost:5050/api/activity_log?limit=10");
+        const res = await fetch(getApiUrl("/api/activity_log?limit=10"));
         const logs = await res.json();
         setActivityLog(logs);
       } catch {}
@@ -203,7 +204,7 @@ export default function DashboardPage() {
     setAgentStates({ ...agentStates, [agent]: newState });
 
     try {
-      await fetch("http://localhost:5050/api/agent_command", {
+      await fetch(getApiUrl("/api/agent_command"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -234,7 +235,7 @@ export default function DashboardPage() {
           formData.append("audio", blob);
 
           try {
-            const res = await fetch("http://localhost:5050/api/voice_command", {
+            const res = await fetch(getApiUrl("/api/voice_command"), {
               method: "POST",
               body: formData,
             });

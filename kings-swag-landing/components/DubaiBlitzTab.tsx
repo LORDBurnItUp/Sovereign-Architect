@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Flame, Loader2, Target, Sparkles, Gift, TrendingDown, TrendingUp, Radio } from "lucide-react";
+import { getApiUrl } from "@/lib/api-config";
 
 type AdVariant = { title: string; body: string };
 type Lead = { firm: string; note: string; public_dir: string };
@@ -40,7 +41,7 @@ export default function DubaiBlitzTab() {
     setPulseBusy(true);
     setPulseErr(null);
     try {
-      const r = await fetch("/api/symphony/pulse", {
+      const r = await fetch(getApiUrl("/api/symphony/pulse"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ focus: "dubai-blitz" }),
@@ -66,7 +67,7 @@ export default function DubaiBlitzTab() {
       const prompt =
         'Generate 4 short, high-energy ad variants for the $50 flat limited-time Sovereign Gateway intro aimed at small/mid-tier Dubai real-estate agencies struggling in the 2026 cooling secondary market. ' +
         'Return a JSON array of {title, body}. title <= 60 chars punchy. body <= 240 chars, crisp, mentions "$50", "7-day sovereign beta", and a single concrete next step. No hashtags. No emoji except ◈ or ✦ if it helps. Do not include JSON markers or commentary — just the array.';
-      const r = await fetch("/api/omnichat/send", {
+      const r = await fetch(getApiUrl("/api/omnichat/send"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ provider: "global", brain: "groq", text: prompt }),

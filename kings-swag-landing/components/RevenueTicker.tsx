@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { getApiUrl } from "@/lib/api-config";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,7 +29,7 @@ export default function RevenueTicker() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:5050/api/revenue_ticker");
+        const res = await fetch(getApiUrl("/api/revenue_ticker"));
         const json = await res.json();
         setData(json);
       } catch {

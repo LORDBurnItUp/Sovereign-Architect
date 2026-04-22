@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
+import { getApiUrl } from "@/lib/api-config";
 
 interface Agent {
   id: string;
@@ -43,7 +44,7 @@ export default function AgentHive() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch("http://localhost:5050/api/agent_hive");
+        const res = await fetch(getApiUrl("/api/agent_hive"));
         const json = await res.json();
         setAgents((prev) =>
           prev.map((a) => {

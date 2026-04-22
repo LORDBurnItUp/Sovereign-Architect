@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Radio, Loader2, Zap } from "lucide-react";
+import { getApiUrl } from "@/lib/api-config";
 
 type General = { slug: string; display_name: string };
 
@@ -77,7 +78,7 @@ export default function WarRoomMic() {
     const pulseFocus = detectPulse(text);
     if (pulseFocus) {
       try {
-        const r = await fetch("/api/symphony/pulse", {
+        const r = await fetch(getApiUrl("/api/symphony/pulse"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ focus: pulseFocus }),
@@ -93,7 +94,7 @@ export default function WarRoomMic() {
     const general = detectGeneral(text);
     if (general) {
       try {
-        const r = await fetch("/api/symphony/speak", {
+        const r = await fetch(getApiUrl("/api/symphony/speak"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ general, text }),
@@ -107,7 +108,7 @@ export default function WarRoomMic() {
     }
 
     try {
-      const r = await fetch("/api/symphony/broadcast", {
+      const r = await fetch(getApiUrl("/api/symphony/broadcast"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text }),
@@ -126,7 +127,7 @@ export default function WarRoomMic() {
     try {
       const form = new FormData();
       form.append("audio", blob, "warroom.webm");
-      const r = await fetch("/api/stt", { method: "POST", body: form });
+      const r = await fetch(getApiUrl("/api/stt"), { method: "POST", body: form });
       const data = await r.json();
       if (!r.ok) {
         setErr(data.detail || data.error || `stt ${r.status}`);
