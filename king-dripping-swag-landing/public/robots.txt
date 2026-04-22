@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /mission-control
+Disallow: /outreach/generate
+Disallow: /pitch
+Disallow: /lead-intel
+Disallow: /api/
+
+Sitemap: https://kingsdriven.io/sitemap.xml

@@ -1,0 +1,47 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: kingsdriven-landing/package-lock.json
+
+      - name: Install dependencies
+        working-directory: kingsdriven-landing
+        run: npm ci
+
+      - name: Build Next.js app
+        working-directory: kingsdriven-landing
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://kingsdrippingswag.io
+
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTINGER_IP }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          script: |
+            cd ~/kingsdrippingswag
+            git pull origin main
+            cd kingsdriven-landing
+            npm ci --omit=dev
+            npm run build
+            pm2 restart kingsdrippingswag || pm2 start npm --name kingsdrippingswag -- start
+            pm2 save

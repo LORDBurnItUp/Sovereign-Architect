@@ -1,0 +1,3 @@
+Timestamp,Agent_Name,Company,Contact_Name,Email,Phone,Source,Priority_Score,Status
+2026-04-22T00:57:23.064326+00:00,Sentinel,Palm Jumeirah Holdings,Aisha Al Maktoum,aisha@palmjumeirah.example,+971-50-555-0199,LinkedIn Sales Nav,88,VALIDATED
+2026-04-22T00:57:34.256900+00:00,Travis,Dubai Yacht Club,,bookings@dyc.example,,Apify,55,VALIDATED

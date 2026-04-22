@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>King Dripping Swag — Mission Control v2</title>
+  <meta name="description" content="Full-stack Mission Control for the King Dripping Swag 6-Tier Brain. Real data, real chat, real terminal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN SYSTEM — PeachWeb-inspired v2
+    ═══════════════════════════════════════════════ */
+    :root {
+      --bg:      #050505;
+      --bg2:     #0a0a09;
+      --bg3:     #121211;
+      --surf:    rgba(255,255,255,0.02);
+      --surf2:   rgba(255,255,255,0.04);
+      --bord:    rgba(229,228,226,0.08); /* Chrome */
+      --bord2:   rgba(212,175,55,0.15);  /* Gold */
+      --txt:     #ffffff;
+      --muted:   rgba(255,255,255,0.45);
+      --muted2:  rgba(255,255,255,0.15);
+      
+      --gold:        #D4AF37;
+      --gold-bright: #FFD700;
+      --chrome:      #E5E4E2;
+      --red:         #C41E3A;
+      --green:       #34d399;
+      --obsidian:    #050505;
+      /* Terminal / functional colors (kept for log output readability) */
+      --cyan:        #00e5ff;
+      --amber:       #fbbf24;
+      --purple:      #a78bfa;
+      
+      --grad-gold: linear-gradient(135deg, #996515 0%, #D4AF37 50%, #FFD700 100%);
+      --grad-chrome: linear-gradient(135deg, #71706E 0%, #E5E4E2 50%, #A09F9D 100%);
+      
+      --mono:    'JetBrains Mono', monospace;
+      --r:       24px;   /* Slightly more rounded for premium feel */
+      --r-sm:    14px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--txt);
+      min-height:100vh;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── Billionaire Parallax Universe ── */
+    #parallax-container {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .parallax-layer {
+      position: absolute;
+      inset: -50px;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+    }
+    .layer-deep {
+      background: radial-gradient(circle at 70% 20%, rgba(212,175,55,0.03) 0%, transparent 50%),
+                  radial-gradient(circle at 20% 80%, rgba(196,30,58,0.02) 0%, transparent 40%);
+      z-index: 1;
+    }
+    .layer-mid {
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10L11 11M90 90L91 91M50 50L51 51' stroke='rgba(212,175,55,0.1)' stroke-width='1'/%3E%3C/svg%3E");
+      z-index: 2;
+      opacity: 0.5;
+    }
+    .layer-dust {
+      background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.01) 0%, transparent 10%);
+      z-index: 3;
+    }
+
+    /* ════════════════════════════════════════════
+       LAYOUT SHELL
+    ════════════════════════════════════════════ */
+    .shell{display:flex;min-height:100vh;position:relative;z-index:1;}
+
+    /* ── SIDEBAR ── */
+    .sidebar{
+      width:240px;flex-shrink:0;
+      background:rgba(5,5,5,.85);
+      border-right:1px solid var(--bord);
+      backdrop-filter:blur(32px);
+      position:sticky;top:0;height:100vh;overflow-y:auto;
+      display:flex;flex-direction:column;
+      padding:24px 0;
+      z-index:100;
+    }
+    .sidebar::-webkit-scrollbar{width:3px;}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(212,175,55,.1);border-radius:4px;}
+
+    .sidebar-logo{
+      padding:0 24px 24px;
+      border-bottom:1px solid var(--bord);
+      margin-bottom:16px;
+    }
+    .logo-mark{
+      width:42px;height:42px;border-radius:12px;
+      background:var(--grad-gold);
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;margin-bottom:10px;
+      box-shadow:0 10px 20px -5px rgba(212,175,55,.3);
+      position:relative;overflow:hidden;
+    }
+    .logo-mark::after{
+      content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);
+      animation:logo-shine 4s infinite;
+    }
+    @keyframes logo-shine{0%{left:-100%}20%,100%{left:100%}}
+    .logo-name{font-size:16px;font-weight:800;letter-spacing:-.4px;background:var(--grad-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .logo-sub{font-size:10px;color:rgba(212,175,55,0.6);letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+
+    .nav-section{padding:0 14px;margin-bottom:12px;}
+    .nav-section-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(212,175,55,0.3);padding:8px 10px 6px;margin-bottom:4px;}
+    .nav-item{
+      display:flex;align-items:center;gap:12px;
+      padding:10px 14px;border-radius:14px;
+      font-size:13px;font-weight:600;
+      color:rgba(255,255,255,.5);
+      cursor:pointer;transition:all .2s;
+      margin-bottom:4px;
+      text-decoration:none;
+      border:1px solid transparent;background:transparent;width:100%;font-family:inherit;
+    }
+    .nav-item:hover{background:rgba(212,175,55,.05);color:var(--gold);}
+    .nav-item.active{background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.25);box-shadow:inset 0 0 10px rgba(212,175,55,0.05);}
+    .nav-item .nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center;}
+    .nav-badge{margin-left:auto;font-size:9px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(212,175,55,.15);color:var(--gold);border:1px solid rgba(212,175,55,0.2);}
+
+    .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--bord);}
+    .agent-status-pill{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:10px;
+      background:var(--surf);border:1px solid var(--bord2);
+      font-size:11px;font-weight:600;
+    }
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:dotpulse 2s ease-in-out infinite;}
+    @keyframes dotpulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+    /* ── MAIN ── */
+    .main{flex:1;overflow-y:auto;padding:28px 32px 80px;}
+    .main::-webkit-scrollbar{width:4px;}
+    .main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px;}
+
+    /* ── TOP BAR ── */
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:28px;
+      padding-bottom:20px;
+      border-bottom:1px solid var(--bord);
+    }
+    .topbar-title{font-size:26px;font-weight:800;letter-spacing:-1px;}
+    .topbar-title span{background:var(--grad-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .topbar-ts{font-size:11px;color:rgba(212,175,55,0.4);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+
+    .btn{
+      padding:7px 16px;border-radius:999px;font-size:12px;font-weight:600;
+      cursor:pointer;border:none;font-family:inherit;transition:all .2s;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .btn-sm{padding:5px 12px;font-size:11px;}
+    .btn-solid{background:var(--gold);color:var(--obsidian);font-weight:700;}
+    .btn-solid:hover{background:var(--gold-bright);transform:translateY(-1.5px);box-shadow:0 8px 20px rgba(212,175,55,0.2);}
+    .btn-ghost{background:transparent;border:1px solid var(--bord);color:rgba(212,175,55,0.6);}
+    .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+    .btn-cyan{background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.15);color:var(--gold);}
+    .btn-cyan:hover{background:rgba(212,175,55,.12);}
+    .btn-purple{background:rgba(229,228,226,.08);border:1px solid rgba(229,228,226,.15);color:var(--chrome);}
+    .btn-purple:hover{background:rgba(229,228,226,.12);}
+    .btn-red{background:rgba(196,30,58,.1);border:1px solid rgba(196,30,58,.2);color:var(--red);}
+    .btn-danger{background:var(--red);color:#fff;}
+    .btn-green{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:#34d399;}
+
+    /* ════════════════════════════════════════════
+       SCROLL REVEAL
+    ════════════════════════════════════════════ */
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .55s ease,transform .55s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .reveal-delay-1{transition-delay:.08s;}
+    .reveal-delay-2{transition-delay:.16s;}
+    .reveal-delay-3{transition-delay:.24s;}
+    .reveal-delay-4{transition-delay:.32s;}
+
+    /* ════════════════════════════════════════════
+       SECTION HEADERS
+    ════════════════════════════════════════════ */
+    .sec-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+    .sec-title{font-size:15px;font-weight:700;letter-spacing:-.2px;}
+    .sec-line{flex:1;height:1px;background:var(--bord);}
+    .sec-tag{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+
+    /* ════════════════════════════════════════════
+       GLASS PANELS & CARDS
+    ════════════════════════════════════════════ */
+    .glass{
+      background:rgba(10,10,10,0.6);
+      border:1px solid var(--bord);
+      border-radius:var(--r);
+      backdrop-filter:blur(32px);
+      position:relative;overflow:hidden;
+      box-shadow:0 20px 40px rgba(0,0,0,0.4);
+    }
+    .glass::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,175,55,.15),transparent);
+    }
+    .panel-head{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .panel-head-left{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;}
+    .panel-icon{width:26px;height:26px;border-radius:8px;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .panel-badge{font-size:9.5px;font-weight:700;padding:2px 9px;border-radius:6px;border:1px solid var(--bord);color:var(--muted);background:rgba(255,255,255,.02);font-variant-numeric:tabular-nums;}
+    .panel-body{overflow-y:auto;max-height:380px;}
+    .panel-body::-webkit-scrollbar{width:3px;}
+    .panel-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:4px;}
+
+    /* ════════════════════════════════════════════
+       STAT CARDS
+    ════════════════════════════════════════════ */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    .stat-card{
+      background:rgba(255,255,255,0.015);
+      border:1px solid var(--bord);
+      border-radius:24px;padding:26px;
+      position:relative;overflow:hidden;
+      transition:all .3s cubic-bezier(0.2, 0, 0.2, 1);cursor:default;
+      backdrop-filter:blur(16px);
+    }
+    .stat-card:hover{transform:translateY(-5px) scale(1.02);border-color:rgba(212,175,55,0.3);box-shadow:0 15px 35px rgba(0,0,0,0.4);}
+    .stat-card::after{
+      content:'';position:absolute;bottom:-30px;right:-30px;
+      width:90px;height:90px;border-radius:50%;
+      background:var(--accent);filter:blur(35px);opacity:.08;
+    }
+    .stat-icon{font-size:18px;margin-bottom:14px;display:block;}
+    .stat-val{font-size:32px;font-weight:700;line-height:1;letter-spacing:-1px;margin-bottom:4px;font-variant-numeric:tabular-nums;}
+    .stat-sub{font-size:10.5px;color:var(--muted);font-weight:400;}
+
+    /* ════════════════════════════════════════════
+       GRID LAYOUTS
+    ════════════════════════════════════════════ */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+    .col-span-2{grid-column:span 2;}
+
+    /* ════════════════════════════════════════════
+       LIST ROWS
+    ════════════════════════════════════════════ */
+    .list-row{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.03);
+      transition:background .15s;
+    }
+    .list-row:last-child{border-bottom:none;}
+    .list-row:hover{background:rgba(255,255,255,.025);}
+    .row-main{flex:1;min-width:0;}
+    .row-text{font-size:12px;color:rgba(255,255,255,.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;}
+    .row-meta{font-size:9.5px;color:var(--muted2);font-variant-numeric:tabular-nums;}
+    .role-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
+    .role-assistant{background:rgba(229,228,226,.08);color:var(--chrome);}
+
+    /* ── Activity Feed ── */
+    .activity-feed{display:flex;flex-direction:column;gap:12px;}
+    .activity-item{
+      padding:16px 20px;
+      display:flex;gap:16px;align-items:flex-start;
+      cursor:pointer;transition:all .3s ease;
+      position:relative;
+    }
+    .activity-item:hover{background:rgba(255,255,255,0.03);transform:translateX(5px);border-color:rgba(212,175,55,0.3);}
+    .act-icon-wrap{
+      width:40px;height:40px;border-radius:12px;background:var(--surf2);
+      display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+      border:1px solid var(--bord);
+    }
+    .act-body{flex:1;min-width:0;}
+    .act-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+    .act-category{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold);opacity:.7;}
+    .act-ts{font-size:10px;color:var(--muted2);font-family:var(--mono);}
+    .act-content{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,0.85);font-weight:400;}
+    .act-type-tag{padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700;text-transform:uppercase;margin-left:8px;}
+
+    /* ════════════════════════════════════════════
+       TERMINAL
+    ════════════════════════════════════════════ */
+    .terminal-wrap{
+      background:rgba(3,2,12,.65);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--r);
+      overflow:hidden;
+    }
+    .terminal-bar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 18px;background:rgba(255,255,255,.02);
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .term-btns{display:flex;gap:6px;}
+    .tbtn{width:11px;height:11px;border-radius:50%;}
+    .tbtn.r{background:#f87171;} .tbtn.y{background:#fbbf24;} .tbtn.g{background:#34d399;}
+    #term-output{
+      font-family:var(--mono);font-size:11px;line-height:1.75;
+      padding:16px 18px;max-height:300px;overflow-y:auto;min-height:120px;
+      color:rgba(255,255,255,.35);white-space:pre-wrap;word-break:break-all;
+    }
+    #term-output::-webkit-scrollbar{width:3px;}
+    #term-output::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);}
+    .term-input-row{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 18px;border-top:1px solid rgba(255,255,255,.04);
+    }
+    .term-prompt{font-family:var(--mono);font-size:12px;color:var(--cyan);white-space:nowrap;}
+    #term-input{
+      flex:1;background:transparent;border:none;outline:none;
+      font-family:var(--mono);font-size:12px;color:#fff;
+      caret-color:var(--cyan);
+    }
+    #term-input::placeholder{color:rgba(255,255,255,.2);}
+
+    .log-line-cycle{color:var(--cyan);}
+    .log-line-success{color:var(--green);}
+    .log-line-error{color:var(--red);}
+    .log-line-warn{color:var(--amber);}
+    .log-line-info{color:rgba(255,255,255,.3);}
+
+    /* ════════════════════════════════════════════
+       CHAT
+    ════════════════════════════════════════════ */
+    .chat-wrap{display:flex;flex-direction:column;height:480px;}
+    #chat-messages{
+      flex:1;overflow-y:auto;padding:16px 18px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+    #chat-messages::-webkit-scrollbar{width:3px;}
+    #chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);}
+    .chat-msg{
+      max-width:88%;padding:10px 14px;
+      border-radius:14px;font-size:12.5px;line-height:1.6;
+      white-space:pre-wrap;word-break:break-word;
+    }
+    .chat-msg.user{
+      align-self:flex-end;
+      background:linear-gradient(135deg,rgba(124,58,237,.4),rgba(76,29,149,.4));
+      border:1px solid rgba(124,58,237,.35);color:#fff;
+    }
+    .chat-msg.assistant{
+      align-self:flex-start;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--bord2);color:rgba(255,255,255,.9);
+    }
+    .chat-msg-meta{font-size:9.5px;color:var(--muted2);margin-top:4px;}
+    .chat-thinking{display:flex;gap:4px;align-items:center;padding:4px 0;}
+    .think-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:thinking .9s ease-in-out infinite;}
+    .think-dot:nth-child(2){animation-delay:.15s;}
+    .think-dot:nth-child(3){animation-delay:.3s;}
+    @keyframes thinking{0%,60%,100%{opacity:.15;transform:scale(.8);}30%{opacity:1;transform:scale(1.1);}}
+    .chat-input-row{
+      display:flex;gap:8px;align-items:flex-end;
+      padding:12px 16px;border-top:1px solid var(--bord);
+    }
+    #chat-input{
+      flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bord2);
+      border-radius:12px;padding:9px 14px;
+      font-family:inherit;font-size:12.5px;color:#fff;
+      resize:none;min-height:40px;max-height:120px;outline:none;
+      transition:border-color .2s;
+    }
+    #chat-input:focus{border-color:rgba(124,58,237,.5);}
+    #chat-input::placeholder{color:var(--muted2);}
+    .tg-row{
+      display:flex;gap:8px;align-items:center;
+      padding:10px 16px;border-top:1px solid rgba(255,255,255,.04);
+    }
+    #tg-input{
+      flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bord2);
+      border-radius:10px;padding:7px 12px;
+      font-family:inherit;font-size:12px;color:#fff;outline:none;
+    }
+    #tg-input::placeholder{color:var(--muted2);}
+
+    /* ════════════════════════════════════════════
+       NOTES
+    ════════════════════════════════════════════ */
+    .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:16px 18px;}
+    .note-card{
+      background:var(--surf);border:1px solid var(--bord);
+      border-radius:14px;padding:14px;
+      transition:transform .2s,box-shadow .2s;cursor:pointer;
+      position:relative;
+    }
+    .note-card:hover{transform:translateY(-2px);}
+    .note-accent{position:absolute;top:0;left:0;width:3px;bottom:0;border-radius:var(--r) 0 0 var(--r);}
+    .note-title{font-size:13px;font-weight:600;margin-bottom:6px;padding-left:10px;}
+    .note-content{font-size:11.5px;color:var(--muted);line-height:1.5;max-height:64px;overflow:hidden;padding-left:10px;}
+    .note-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-left:10px;}
+    .note-date{font-size:9.5px;color:var(--muted2);}
+    .note-del{
+      background:transparent;border:none;color:var(--muted2);font-size:14px;
+      cursor:pointer;padding:2px 6px;border-radius:6px;transition:all .15s;
+      line-height:1;
+    }
+    .note-del:hover{background:rgba(248,113,113,.15);color:var(--red);}
+    .note-add{
+      display:flex;flex-direction:column;gap:8px;
+      padding:16px 18px;border-top:1px solid var(--bord);
+    }
+    .note-in{
+      background:rgba(255,255,255,.04);border:1px solid var(--bord2);
+      border-radius:10px;padding:8px 12px;
+      font-family:inherit;font-size:12px;color:#fff;outline:none;
+      transition:border-color .2s;
+    }
+    .note-in:focus{border-color:rgba(124,58,237,.5);}
+    .note-in::placeholder{color:var(--muted2);}
+    textarea.note-in{resize:none;min-height:60px;}
+
+    /* ════════════════════════════════════════════
+       API KEYS
+    ════════════════════════════════════════════ */
+    .keys-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;padding:16px 18px;}
+    .key-card{
+      background:rgba(255,255,255,.025);border:1px solid var(--bord);
+      border-radius:12px;padding:12px 14px;
+      display:flex;align-items:center;gap:12px;
+      transition:border-color .2s;
+    }
+    .key-card:hover{border-color:var(--bord2);}
+    .key-logo{
+      width:34px;height:34px;border-radius:9px;
+      background:var(--surf2);border:1px solid var(--bord2);
+      display:flex;align-items:center;justify-content:center;
+      font-size:16px;flex-shrink:0;
+    }
+    .key-info{flex:1;min-width:0;}
+    .key-name{font-size:12.5px;font-weight:600;margin-bottom:3px;}
+    .key-masked{font-family:var(--mono);font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .key-set-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;}
+    .key-set{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);color:var(--green);}
+    .key-unset{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--red);}
+
+    .test-btn{
+      padding:5px 12px;border-radius:8px;font-size:10.5px;font-weight:600;
+      border:1px solid var(--bord2);background:var(--surf2);
+      color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s;
+      white-space:nowrap;flex-shrink:0;
+    }
+    .test-btn:hover{border-color:rgba(0,240,255,.4);color:var(--cyan);}
+    .test-btn.ok{border-color:rgba(52,211,153,.5);color:var(--green);background:rgba(52,211,153,.08);}
+    .test-btn.fail{border-color:rgba(248,113,113,.5);color:var(--red);background:rgba(248,113,113,.08);}
+
+    /* ════════════════════════════════════════════
+       COMMANDS PALETTE
+    ════════════════════════════════════════════ */
+    .cmd-list{padding:12px 18px;display:flex;flex-direction:column;gap:6px;}
+    .cmd-row{
+      display:flex;align-items:center;gap:10px;
+      border:1px solid var(--bord);border-radius:10px;padding:9px 12px;
+      cursor:pointer;transition:all .15s;
+    }
+    .cmd-row:hover{background:var(--surf2);border-color:var(--bord2);}
+    .cmd-code{font-family:var(--mono);font-size:10.5px;color:var(--cyan);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .cmd-desc{font-size:10.5px;color:var(--muted);flex-shrink:0;max-width:180px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+    /* ════════════════════════════════════════════
+       RELATIONS
+    ════════════════════════════════════════════ */
+    .rel-row{display:flex;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:11.5px;}
+    .rel-row:last-child{border-bottom:none;}
+    .rel-src{color:rgba(255,255,255,.8);font-weight:600;flex:1;}
+    .rel-arr{color:rgba(255,255,255,.2);}
+    .rel-type{font-size:9px;font-weight:700;padding:2px 9px;border-radius:6px;background:rgba(0,240,255,.07);color:var(--cyan);text-transform:uppercase;letter-spacing:.5px;}
+    .rel-str{font-size:10px;color:var(--green);font-weight:600;flex-shrink:0;font-variant-numeric:tabular-nums;}
+
+    /* ════════════════════════════════════════════
+       ENTITY CANVAS
+    ════════════════════════════════════════════ */
+    #entity-canvas{width:100%;height:260px;position:relative;overflow:hidden;background:rgba(3,2,12,.5);}
+    .ent-node{
+      position:absolute;padding:6px 14px;border-radius:999px;
+      font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer;
+      transition:transform .2s;
+      animation:nodeIn .4s ease forwards;opacity:0;
+    }
+    @keyframes nodeIn{from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);}}
+    .ent-node:hover{transform:scale(1.12)!important;}
+
+    /* ════════════════════════════════════════════
+       TICKER
+    ════════════════════════════════════════════ */
+    .ticker-wrap{overflow:hidden;border-bottom:1px solid var(--bord);background:rgba(0,240,255,.025);padding:9px 0;}
+    .ticker-track{display:flex;gap:10px;width:max-content;animation:tick 28s linear infinite;}
+    @keyframes tick{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+    .ticker-item{
+      display:flex;align-items:center;gap:7px;padding:3px 14px;
+      border-radius:999px;background:rgba(0,240,255,.07);
+      border:1px solid rgba(0,240,255,.12);
+      font-size:11px;font-weight:600;color:var(--cyan);white-space:nowrap;
+    }
+
+    /* ════════════════════════════════════════════
+       NOTIFICATIONS
+    ════════════════════════════════════════════ */
+    #notif{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+    .notif{
+      padding:11px 16px;background:var(--bg3);border:1px solid var(--bord2);
+      border-radius:12px;font-size:12px;backdrop-filter:blur(20px);
+      display:flex;align-items:center;gap:8px;max-width:300px;
+      box-shadow:0 8px 32px rgba(0,0,0,.5);
+      animation:nIn .3s ease;
+    }
+    @keyframes nIn{from{opacity:0;transform:translateX(60px);}to{opacity:1;transform:translateX(0);}}
+
+    /* ════════════════════════════════════════════
+       PAGE SECTIONS
+    ════════════════════════════════════════════ */
+    .page{display:none;}
+    .page.active{display:block;}
+
+    /* ════════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════════ */
+    @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(4,1fr);}}
+    @media(max-width:900px){
+      .stats-grid{grid-template-columns:repeat(2,1fr);}
+      .grid-2,.grid-3{grid-template-columns:1fr;}
+      .sidebar{width:64px;}
+      .nav-item span:not(.nav-icon){display:none;}
+      .logo-name,.logo-sub{display:none;}
+      .nav-badge{display:none;}
+      .main{padding:20px 16px 60px;}
+    }
+    /* ════════════════════════════════════════════
+       TABS
+    ════════════════════════════════════════════ */
+    .tabs-header{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--bord);padding-bottom:1px;}
+    .tab-btn{
+      padding:10px 20px;font-size:12px;font-weight:700;color:var(--muted);
+      background:transparent;border:none;border-bottom:2px solid transparent;
+      cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:1px;
+    }
+    .tab-btn:hover{color:var(--txt);background:rgba(255,255,255,.03);}
+    .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(212,175,55,.05);}
+    
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+
+    .copy-btn{
+      padding:4px 8px;font-size:9px;font-weight:800;border-radius:6px;
+      background:rgba(255,255,255,.05);border:1px solid var(--bord);
+      color:var(--muted);cursor:pointer;opacity:0;transition:opacity .2s;
+    }
+    .list-row:hover .copy-btn{opacity:1;}
+    .copy-btn:hover{background:var(--gold);color:var(--obsidian);border-color:var(--gold);}
+    .panel-badge{background:var(--surf2);color:var(--gold);padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;border:1px solid var(--bord);}
+
+    /* ── MODAL ── */
+    #modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);
+      z-index:10000;display:none;align-items:center;justify-content:center;padding:40px;
+    }
+    #modal-content{
+      background:var(--surf);border:1px solid var(--gold);max-width:600px;width:100%;
+      border-radius:16px;box-shadow:0 32px 64px rgba(0,0,0,0.5);overflow:hidden;
+      display:flex;flex-direction:column;
+    }
+    .modal-head{padding:20px;border-bottom:1px solid var(--bord);display:flex;justify-content:space-between;align-items:center;}
+    .modal-body{padding:24px;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.9);max-height:60vh;overflow-y:auto;}
+    .modal-foot{padding:16px 20px;background:rgba(255,255,255,0.02);display:flex;justify-content:flex-end;gap:12px;}
+  </style>
+</head>
+<body>
+
+<div id="parallax-container">
+  <div class="parallax-layer layer-deep" data-speed="0.05"></div>
+  <div class="parallax-layer layer-mid" data-speed="0.12"></div>
+  <div class="parallax-layer layer-dust" data-speed="0.25"></div>
+</div>
+
+<!-- ════════════════════ SHELL ════════════════════ -->
+<div class="shell">
+
+  <!-- ════ SIDEBAR ════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">👑</div>
+      <div class="logo-name">King Dripping Swag</div>
+      <div class="logo-sub">Mission Control</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" onclick="nav('overview')" id="nav-overview">
+        <span class="nav-icon">⚡</span><span>Overview</span>
+      </button>
+      <button class="nav-item" onclick="nav('chat')" id="nav-chat">
+        <span class="nav-icon">💬</span><span>Chat</span>
+      </button>
+      <button class="nav-item" onclick="nav('terminal')" id="nav-terminal">
+        <span class="nav-icon">⌨️</span><span>Terminal</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Data</div>
+      <button class="nav-item" onclick="nav('memory')" id="nav-memory">
+        <span class="nav-icon">🧠</span><span>Memory</span>
+      </button>
+      <button class="nav-item" onclick="nav('entities')" id="nav-entities">
+        <span class="nav-icon">📡</span><span>Entities</span>
+      </button>
+      <button class="nav-item" onclick="nav('logs')" id="nav-logs">
+        <span class="nav-icon">📋</span><span>Live Logs</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Tools</div>
+      <button class="nav-item" onclick="nav('infra')" id="nav-infra">
+        <span class="nav-icon">☁️</span><span>Infrastructure</span>
+      </button>
+      <button class="nav-item" onclick="nav('repo')" id="nav-repo">
+        <span class="nav-icon">🐙</span><span>Repository</span>
+      </button>
+      <button class="nav-item" onclick="nav('notes')" id="nav-notes">
+        <span class="nav-icon">📝</span><span>Notes</span>
+        <span class="nav-badge" id="notes-nav-badge">0</span>
+      </button>
+      <button class="nav-item" onclick="nav('keys')" id="nav-keys">
+        <span class="nav-icon">🔑</span><span>API Keys</span>
+      </button>
+      <button class="nav-item" onclick="nav('telegram')" id="nav-telegram">
+        <span class="nav-icon">✈️</span><span>Telegram</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div style="border-radius:14px;overflow:hidden;margin-bottom:10px;position:relative;height:72px;">
+        <img src="assets/bot-team.jpg" alt="Agent Team" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:saturate(0.9)brightness(0.7);">
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,5,5,0.7),transparent);display:flex;align-items:center;padding:0 12px;">
+          <div>
+            <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);">3 AGENTS</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);">Douglas · Hermes · Sentinel</div>
+          </div>
+        </div>
+      </div>
+      <div class="agent-status-pill">
+        <div class="dot" id="sidebar-dot"></div>
+        <span id="sidebar-status">Loading…</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════ MAIN CONTENT ════ -->
+  <main class="main" id="main-scroll">
+
+    <!-- TICKER -->
+    <div class="ticker-wrap" style="margin:-28px -32px 28px;width:calc(100% + 64px);">
+      <div class="ticker-track" id="ticker"></div>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Mission <span>Control</span></div>
+        <div class="topbar-ts" id="ts-update">Connecting…</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">⟳ Sync</button>
+        <button class="btn btn-solid btn-sm" onclick="nav('chat')">💬 Talk to Agent</button>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: OVERVIEW ══════════ -->
+    <div class="page active" id="page-overview">
+      <!-- STATS -->
+      <div class="stats-grid reveal" style="margin-bottom:16px;">
+        <div class="stat-card" style="--accent:rgba(212,175,55,.5)">
+          <div class="stat-val" id="s-messages">—</div>
+          <div class="stat-sub">INTELLIGENCE MSGS</div>
+        </div>
+        <div class="stat-card reveal-delay-1" style="--accent:rgba(229,228,226,.5)">
+          <div class="stat-val" id="s-cycles">—</div>
+          <div class="stat-sub">NEURAL CYCLES</div>
+        </div>
+        <div class="stat-card reveal-delay-2" style="--accent:rgba(212,175,55,.5)">
+          <div class="stat-val" id="s-memory">—</div>
+          <div class="stat-sub">CORE FACTS</div>
+        </div>
+        <div class="stat-card reveal-delay-3" style="--accent:rgba(229,228,226,.5)">
+          <div class="stat-val" id="s-notes">—</div>
+          <div class="stat-sub">STRATEGY NOTES</div>
+        </div>
+      </div>
+
+      <!-- MAIN FEED -->
+      <div class="sec-header reveal">
+        <div class="sec-title">⬡ NEURAL ACTIVITY FEED</div>
+        <div class="sec-line"></div>
+        <div class="sec-tag">LATEST FROM EMPIRE</div>
+      </div>
+      
+      <div class="glass reveal activity-feed" id="main-activity-feed" style="margin-bottom:28px;max-height:800px;overflow-y:auto;">
+        <div style="padding:60px;text-align:center;color:var(--muted2);">Synchronizing with neural lattice…</div>
+      </div>
+
+    </div>
+
+    <!-- ══════════ PAGE: CHAT ══════════ -->
+    <div class="page" id="page-chat">
+      <div class="sec-header reveal"><div class="sec-title">💬 Agent Chat</div><div class="sec-line"></div><div class="sec-tag">Groq / OpenAI</div></div>
+      <div class="glass reveal chat-wrap" style="margin-bottom:16px;">
+        <div id="chat-messages">
+          <div class="chat-msg assistant">👑 Gravity-Hermes online. How can I help you build the King Dripping Swag empire today?</div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" rows="1" placeholder="Ask the agent anything… strategy, leads, code, execution…" onkeydown="chatKey(event)"></textarea>
+          <button class="btn btn-purple btn-sm" onclick="sendChat()">Send ↑</button>
+        </div>
+      </div>
+
+      <!-- Telegram bridge in chat -->
+      <div class="sec-header reveal"><div class="sec-title">✈️ Telegram Bridge</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📤</div>Send Message</div>
+          </div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;">
+            <input id="tg-chat-id" style="background:rgba(255,255,255,.04);border:1px solid var(--bord2);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:12px;color:#fff;outline:none;" placeholder="Chat ID (or uses .env TELEGRAM_CHAT_ID)"/>
+            <div class="tg-row" style="padding:0;">
+              <input id="tg-input" placeholder="Message to send to Telegram…" style="flex:1;"/>
+              <button class="btn btn-cyan btn-sm" onclick="tgSend()">Send</button>
+            </div>
+            <div id="tg-result" style="font-size:11px;color:var(--muted);font-family:var(--mono);padding-top:4px;"></div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📥</div>Incoming Messages</div>
+            <button class="test-btn" onclick="fetchTgUpdates()">⟳ Fetch</button>
+          </div>
+          <div class="panel-body" id="tg-updates-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Click Fetch to load</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: TERMINAL ══════════ -->
+    <div class="page" id="page-terminal">
+      <div class="sec-header reveal"><div class="sec-title">⌨️ Terminal</div><div class="sec-line"></div><div class="sec-tag">Safe Shell</div></div>
+      <div class="grid-2 reveal" style="margin-bottom:16px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="terminal-wrap">
+            <div class="terminal-bar">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="term-btns"><div class="tbtn r"></div><div class="tbtn y"></div><div class="tbtn g"></div></div>
+                <span style="font-family:var(--mono);font-size:11.5px;color:var(--muted);">gravity-claw shell</span>
+              </div>
+              <button class="test-btn" onclick="clearTerminal()">Clear</button>
+            </div>
+            <pre id="term-output">King Dripping Swag Shell v2.0 — Type a command below or click a preset.\n</pre>
+            <div class="term-input-row">
+              <span class="term-prompt">→</span>
+              <input id="term-input" placeholder="Enter command…" onkeydown="termKey(event)" autocomplete="off" spellcheck="false">
+              <button class="btn btn-cyan btn-sm" onclick="runTermCmd()">Run</button>
+            </div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📘</div>Command Presets</div>
+          </div>
+          <div class="cmd-list" id="cmd-presets">
+            <div style="padding:24px;text-align:center;color:var(--muted2);font-size:12px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+      <div class="glass reveal">
+        <div class="panel-head">
+          <div class="panel-head-left"><div class="panel-icon">📜</div>Command History</div>
+          <span class="panel-badge" id="term-hist-badge">0</span>
+        </div>
+        <div class="panel-body" id="term-history">
+          <div style="padding:24px;text-align:center;color:var(--muted2);font-size:12px;">No history yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: MEMORY ══════════ -->
+    <div class="page" id="page-memory">
+      <div class="sec-header reveal"><div class="sec-title">🧠 6-Tier Intelligence Memory</div><div class="sec-line"></div></div>
+      
+      <div class="tabs-header reveal">
+        <button class="tab-btn active" onclick="memTab('facts')">Facts</button>
+        <button class="tab-btn" onclick="memTab('messages')">Messages</button>
+        <button class="tab-btn" onclick="memTab('blueprints')">Blueprints</button>
+        <button class="tab-btn" onclick="memTab('archives')">Archives</button>
+      </div>
+
+      <div class="glass reveal">
+        <!-- Tab: Facts -->
+        <div class="tab-content active" id="mem-tab-facts">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🧩</div>Core Memory Facts</div>
+            <span class="panel-badge" id="mem-facts-badge">0</span>
+          </div>
+          <div class="panel-body" id="mem-facts-list"></div>
+        </div>
+
+        <!-- Tab: Messages -->
+        <div class="tab-content" id="mem-tab-messages">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">💬</div>All Agent Messages</div>
+            <span class="panel-badge" id="mem-msg-badge">0</span>
+          </div>
+          <div class="panel-body" id="mem-messages-list"></div>
+        </div>
+
+        <!-- Tab: Blueprints -->
+        <div class="tab-content" id="mem-tab-blueprints">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📦</div>Sellable Blueprints</div>
+            <span class="panel-badge" id="bp-badge">0</span>
+          </div>
+          <div class="panel-body" id="blueprints-list"></div>
+        </div>
+
+        <!-- Tab: Archives -->
+        <div class="tab-content" id="mem-tab-archives">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🗜️</div>Cycle Archives</div>
+            <span class="panel-badge" id="arch-badge">0</span>
+          </div>
+          <div class="panel-body" id="archives-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: ENTITIES ══════════ -->
+    <div class="page" id="page-entities">
+      <div class="sec-header reveal"><div class="sec-title">📡 Entity Graph</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📡</div>Entity Nodes</div>
+            <span class="panel-badge" id="ent-badge">0</span>
+          </div>
+          <div id="entity-canvas">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted2);font-size:12px;">No entities</div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🔗</div>Relations</div>
+            <span class="panel-badge" id="rel-badge">0</span>
+          </div>
+          <div class="panel-body" id="relations-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">No relations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: LIVE LOGS ══════════ -->
+    <div class="page" id="page-logs">
+      <div class="sec-header reveal"><div class="sec-title">📋 Live Logs</div><div class="sec-line"></div><div class="sec-tag">agent_progress.log</div></div>
+      <div class="terminal-wrap reveal">
+        <div class="terminal-bar">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="term-btns"><div class="tbtn r"></div><div class="tbtn y"></div><div class="tbtn g"></div></div>
+            <span style="font-family:var(--mono);font-size:11.5px;color:var(--muted);">agent_progress.log — live</span>
+          </div>
+          <span class="panel-badge" id="log-lines-badge">0 lines</span>
+        </div>
+        <pre id="full-log" style="font-family:var(--mono);font-size:11px;line-height:1.75;padding:16px 18px;max-height:520px;overflow-y:auto;color:rgba(255,255,255,.32);white-space:pre-wrap;word-break:break-all;"></pre>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: NOTES ══════════ -->
+    <div class="page" id="page-notes">
+      <div class="sec-header reveal"><div class="sec-title">📝 Notes</div><div class="sec-line"></div><div class="sec-tag">Your knowledge base</div></div>
+      <div class="glass reveal">
+        <div class="panel-head">
+          <div class="panel-head-left"><div class="panel-icon">✏️</div>New Note</div>
+        </div>
+        <div class="note-add">
+          <div style="display:flex;gap:8px;">
+            <input class="note-in" id="note-title" placeholder="Title…" style="flex:1;"/>
+            <input class="note-in" id="note-color" type="color" value="#7c3aed" style="width:40px;padding:4px;cursor:pointer;">
+          </div>
+          <textarea class="note-in" id="note-content" placeholder="Content — strategies, leads, code snippets, observations…"></textarea>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn btn-purple btn-sm" onclick="createNote()">+ Add Note</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;" id="notes-container">
+        <div class="notes-grid" id="notes-grid">
+          <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Loading notes…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: API KEYS ══════════ -->
+    <div class="page" id="page-keys">
+      <div class="sec-header reveal"><div class="sec-title">🔑 API Keys</div><div class="sec-line"></div><div class="sec-tag">Read from .env</div></div>
+      <div class="glass reveal" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <div class="panel-head-left"><div class="panel-icon">ℹ️</div>Keys are masked — never exposed in full</div>
+        </div>
+        <div class="keys-grid" id="keys-grid">
+          <div style="padding:32px;color:var(--muted2);font-size:12px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: TELEGRAM ══════════ -->
+    <div class="page" id="page-telegram">
+      <div class="sec-header reveal"><div class="sec-title">✈️ MULTI-BOT TELEGRAM COMMAND</div><div class="sec-line"></div></div>
+      
+      <!-- BOT SELECTOR -->
+      <div class="tabs-header reveal">
+        <button class="tab-btn active" id="btn-bot-douglas" onclick="selBot('douglas')">Douglas</button>
+        <button class="tab-btn" id="btn-bot-hermes" onclick="selBot('hermes')">Hermes</button>
+        <button class="tab-btn" id="btn-bot-sentinel" onclick="selBot('sentinel')">Sentinel</button>
+        <button class="tab-btn" id="btn-bot-echo" onclick="selBot('echo')">Echo</button>
+        <button class="tab-btn" id="btn-bot-apex" onclick="selBot('apex')">Apex</button>
+        <button class="tab-btn" id="btn-bot-nexus" onclick="selBot('nexus')">Nexus</button>
+      </div>
+
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📤</div>Active Broadcast: <span id="active-bot-name" style="color:var(--gold);margin-left:4px;">DOUGLAS</span></div>
+            <button class="test-btn" id="tg-test-btn" onclick="testTelegram()">Test Ping</button>
+          </div>
+          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <label style="font-size:11px;color:var(--muted);">CHAT ID <span style="opacity:.5;">(Leave blank to use .env default for this bot)</span></label>
+            <input class="note-in" id="tg-chat-id2" placeholder="Numeric Chat ID">
+            <label style="font-size:11px;color:var(--muted);">TRANSMIT PAYLOAD</label>
+            <textarea class="note-in" id="tg-msg-big" placeholder="Enter message to broadcast through this specific neural channel…" style="min-height:120px;"></textarea>
+            <button class="btn btn-cyan" onclick="tgSendBig()" style="height:48px;font-size:14px;">📤 BROADCAST TO CHANNEL</button>
+            <div id="tg-big-result" style="font-size:11px;font-family:var(--mono);color:var(--muted);text-align:center;"></div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📥</div>NEURAL INBOUNDS</div>
+            <button class="test-btn" onclick="fetchTgUpdates()">⟳ REFRESH</button>
+          </div>
+          <div class="panel-body" id="tg-main-updates" style="max-height:480px;">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Click Refresh to load messages</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: INFRASTRUCTURE ══════════ -->
+    <div class="page" id="page-infra">
+      <div class="sec-header reveal"><div class="sec-title">☁️ Infrastructure (Google Cloud)</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🧠</div>Vertex AI Brain Status</div>
+          </div>
+          <div class="panel-body" id="gcp-vertex-body" style="padding:20px;">
+            <div id="infra-vertex-status" style="font-size:14px; margin-bottom:15px;">Loading Vertex status…</div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🗄️</div>GCS Backup Status</div>
+          </div>
+          <div class="panel-body" id="gcp-gcs-body" style="padding:20px;">
+             <div id="infra-gcs-status" style="font-size:14px; margin-bottom:15px;">Loading GCS status…</div>
+          </div>
+        </div>
+      </div>
+      <div class="glass reveal" style="margin-top:16px;">
+        <div class="panel-head"><div class="panel-head-left"><div class="panel-icon">⚙️</div>Project Configuration</div></div>
+        <div class="panel-body" id="infra-project-config" style="padding:20px; font-family:var(--mono); font-size:12px; color:var(--muted);">
+          Loading config…
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: REPOSITORY ══════════ -->
+    <div class="page" id="page-repo">
+      <div class="sec-header reveal"><div class="sec-title">🐙 Repository (GitHub)</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">⚡</div>Recent Commits</div>
+          </div>
+          <div class="panel-body" id="repo-commits-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Loading commits…</div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🛠️</div>Open Issues</div>
+          </div>
+          <div class="panel-body" id="repo-issues-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Loading issues…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- end main -->
+    </div><!-- end shell -->
+
+    <!-- MODAL -->
+    <div id="modal-overlay" onclick="closeModal()">
+      <div id="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <div id="modal-title" style="font-weight:800;letter-spacing:1px;color:var(--gold);">DETAIL</div>
+          <button onclick="closeModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+          <button class="btn btn-gold btn-sm" id="btn-modal-copy">Copy Content</button>
+        </div>
+      </div>
+    </div>
+
+<!-- NOTIF CONTAINER -->
+<div id="notif"></div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+  const API = `${window.location.origin}/api`;
+  let currentPage = 'overview';
+  let termHistory = [], termHistIdx = -1;
+
+  /* ── BILLIONAIRE PARALLAX SCRIPT ── */
+  const pContainer = document.getElementById('main-scroll');
+  const layers = document.querySelectorAll('.parallax-layer');
+  if(pContainer) {
+    pContainer.addEventListener('scroll', () => {
+      const top = pContainer.scrollTop;
+      layers.forEach(layer => {
+        const speed = layer.getAttribute('data-speed');
+        const yPos = -(top * speed);
+        layer.style.transform = `translateY(${yPos}px)`;
+      });
+    });
+  }
+
+  /* ── TICKER ── */
+  const TICKS = ['KINGSDriven.io','Billionaire Pipeline','Elite Automation','Sovereign Systems','Global Empire','Mission Control v2','Neural Network','Tier 6 Brain','Asset Management','High-Ticket AI'];
+  const tk = document.getElementById('ticker');
+  tk.style.background = 'rgba(212,175,55,0.05)';
+  tk.style.color = 'var(--gold)';
+  [...TICKS,...TICKS].forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'ticker-item';
+    el.style.borderColor = 'rgba(212,175,55,0.2)';
+    el.innerHTML = `<span style="color:var(--gold);opacity:.8">◈</span> ${t}`;
+    tk.appendChild(el);
+  });
+
+  /* ── SCROLL REVEAL ── */
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
+  },{threshold:.1});
+  function observeAll(){ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el)); }
+  observeAll();
+
+  /* ── HELPERS ── */
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtTime(ts){
+    try{ const d=new Date(ts); return isNaN(d)?ts:d.toLocaleString(); }catch{ return ts||'–'; }
+  }
+  function fmtTimeShort(ts){
+    try{ const d=new Date(ts); return isNaN(d)?ts:d.toLocaleTimeString(); }catch{ return ts||'–'; }
+  }
+  function notify(msg,color='#34d399'){
+    const stack=document.getElementById('notif');
+    const n=document.createElement('div');
+    n.className='notif';
+    n.style.borderColor = color+'44';
+    n.innerHTML=`<span style="color:${color};font-size:15px;">●</span>${esc(msg)}`;
+    stack.appendChild(n);
+    setTimeout(()=>n.style.opacity='0',3000);
+    setTimeout(()=>n.remove(),3400);
+  }
+  function logClass(l){
+    if(/ERROR|FATAL/i.test(l)) return 'log-line-error';
+    if(/CYCLE \d+ ACTIVE|Iteration \d+/i.test(l)) return 'log-line-cycle';
+    if(/complete|ready|success|SYNC/i.test(l)) return 'log-line-success';
+    if(/WARN/i.test(l)) return 'log-line-warn';
+    return 'log-line-info';
+  }
+  function emptyState(icon,msg){ return `<div style="padding:36px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;"><div style="font-size:26px;opacity:.35">${icon}</div><div style="font-size:12px;color:var(--muted2);">${msg}</div></div>`; }
+
+  /* ── NAV ── */
+  function nav(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    document.getElementById('nav-'+page)?.classList.add('active');
+    currentPage = page;
+    // Trigger page-specific loads
+    if(page==='terminal') loadTermHistory(), loadCmdPresets();
+    if(page==='map') initMap();
+    if(page==='notes') loadNotes();
+    if(page==='keys') loadKeys();
+    if(page==='map') loadMapMarkers();
+    if(page==='telegram') fetchTgUpdates();
+    if(page==='entities') loadEntities(), loadRelations();
+    if(page==='memory') loadMemory(), loadBlueprints(), loadArchives();
+    if(page==='logs') loadFullLog();
+    if(page==='infra') loadInfraStatus();
+    if(page==='repo') loadRepoActivity();
+    // Animate reveals in new page
+    setTimeout(observeAll, 20);
+  }
+
+  /* ─────────────────────── INFRA & REPO ─────────────────────────── */
+  async function loadInfraStatus(){
+    try {
+      const r = await fetch(API+'/gcp/status');
+      const d = await r.json();
+      const v = document.getElementById('infra-vertex-status');
+      const g = document.getElementById('infra-gcs-status');
+      const c = document.getElementById('infra-project-config');
+
+      v.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Gemma 4 26B (Vertex)</span>
+          <span class="role-tag" style="background:${d.vertex_ai==='ACTIVE'?'rgba(52,211,153,.1)':'rgba(196,30,58,.1)'}; color:${d.vertex_ai==='ACTIVE'?'#34d399':'var(--red)'}">${d.vertex_ai}</span>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:var(--muted);">Endpoint: ${esc(d.vertex_endpoint)}</div>
+      `;
+
+      g.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Cloud Storage Backups</span>
+          <span class="role-tag" style="background:${d.gcs==='ACTIVE'?'rgba(52,211,153,.1)':'rgba(196,30,58,.1)'}; color:${d.gcs==='ACTIVE'?'#34d399':'var(--red)'}">${d.gcs}</span>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:var(--muted);">Bucket: ${esc(d.bucket)}</div>
+      `;
+
+      c.innerHTML = `
+        PROJECT_ID: ${esc(d.project)}
+        LOCATION:   ${esc(d.location)}
+        LAST_SYNC:  ${new Date().toLocaleString()}
+      `.trim().replace(/\n/g, '<br>');
+
+    } catch(e) {
+      notify('Failed to load Infra status', 'var(--red)');
+    }
+  }
+
+  async function loadRepoActivity(){
+    try {
+      const r = await fetch(API+'/github/repo');
+      const d = await r.json();
+      
+      const cl = document.getElementById('repo-commits-list');
+      const il = document.getElementById('repo-issues-list');
+
+      if(d.error) {
+         cl.innerHTML = emptyState('❌', d.error);
+         il.innerHTML = emptyState('❌', d.error);
+         return;
+      }
+
+      cl.innerHTML = d.commits.map(c => `
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(c.commit.message)}</div>
+            <div class="row-meta">${esc(c.author.login)} · ${fmtTime(c.commit.author.date)}</div>
+          </div>
+          <a href="${c.html_url}" target="_blank" class="test-btn">↗</a>
+        </div>
+      `).join('') || emptyState('🐙', 'No commits found');
+
+      il.innerHTML = d.issues.map(i => `
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(i.title)}</div>
+            <div class="row-meta">#${i.number} · ${i.state} · ${fmtTime(i.created_at)}</div>
+          </div>
+          <a href="${i.html_url}" target="_blank" class="test-btn">↗</a>
+        </div>
+      `).join('') || emptyState('🛠️', 'No issues found');
+
+    } catch(e) {
+      notify('Failed to load Repo activity', 'var(--red)');
+    }
+  }
+
+  /* ─────────────────────── STATS ─────────────────────────── */
+  async function loadStats(){
+    try{
+      const r = await fetch(API+'/stats'); if(!r.ok) throw new Error();
+      const d = await r.json();
+      document.getElementById('s-messages').textContent = d.messages_logged??0;
+      document.getElementById('s-memory').textContent   = d.memory_facts??0;
+      document.getElementById('s-entities').textContent  = d.entities_mapped??0;
+      document.getElementById('s-relations').textContent = d.relations??0;
+      document.getElementById('s-bots').textContent      = d.active_bots??0;
+      document.getElementById('s-cycles').textContent    = d.cycles_executed??0;
+      document.getElementById('s-archives').textContent  = d.cold_archives??0;
+      document.getElementById('s-notes').textContent     = d.notes_count??0;
+      document.getElementById('notes-nav-badge').textContent = d.notes_count??0;
+      const ok = d.agent_status === 'RUNNING';
+      document.getElementById('sidebar-dot').style.background = ok ? '#34d399' : '#fbbf24';
+      document.getElementById('sidebar-status').textContent = d.agent_status || 'IDLE';
+      document.getElementById('ts-update').textContent = `Synced ${new Date().toLocaleTimeString()}`;
+    }catch{
+      document.getElementById('sidebar-dot').style.background = '#f87171';
+      document.getElementById('sidebar-status').textContent = 'OFFLINE';
+      document.getElementById('ts-update').textContent = 'API offline';
+      notify('API offline — run: python dashboard_api.py','#f87171');
+    }
+  }
+
+  /* ─────────────────────── MODAL ─────────────────────────── */
+  function openModal(title, content){
+    document.getElementById('modal-title').textContent = title.toUpperCase();
+    document.getElementById('modal-body').innerHTML = `<div style="white-space:pre-wrap;">${esc(content)}</div>`;
+    document.getElementById('btn-modal-copy').onclick = () => copyText(content);
+    document.getElementById('modal-overlay').style.display = 'flex';
+  }
+  function closeModal(){ document.getElementById('modal-overlay').style.display = 'none'; }
+
+  /* ─────────────────────── OVERVIEW ACTIVITY FEED ─────────────────────────── */
+  async function loadRecentActivity(){
+    try {
+      const r = await fetch(API+'/activity'); if(!r.ok) return;
+      const data = await r.json();
+      const el = document.getElementById('main-activity-feed');
+      if(!data.length){ el.innerHTML = emptyState('📡','No activity recorded yet.'); return; }
+      
+      const icons = { message: '💬', memory: '🧠', terminal: '⌨️' };
+      const colors = { message: 'rgba(52,211,153', memory: 'rgba(167,139,250', terminal: 'rgba(0,240,255' };
+      
+      el.innerHTML = data.map(a => {
+        const c = colors[a.type];
+        return `
+          <div class="activity-item list-row" onclick="openModal('${a.type} detail', ${JSON.stringify(a.content)})">
+            <div class="act-icon-wrap" style="border-color:${c},.2); background:${c},.05)">
+              ${icons[a.type]||'•'}
+            </div>
+            <div class="act-body">
+              <div class="act-header">
+                <div class="act-category">${esc(a.category)} <span class="act-type-tag" style="background:${c},.1); color:${c},.9);">${esc(a.type)}</span></div>
+                <div class="act-ts">${fmtTimeShort(a.timestamp)}</div>
+              </div>
+              <div class="act-content">${esc(a.content.length > 200 ? a.content.substring(0,200)+'...' : a.content)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {}
+  }
+
+  /* ─────────────────────── FULL LOG ─────────────────────────── */
+  async function loadFullLog(){
+    try{
+      const r = await fetch(API+'/logs'); if(!r.ok) return;
+      const d = await r.json();
+      const lines = d.lines||[];
+      document.getElementById('log-lines-badge').textContent = lines.length+' lines';
+      const el = document.getElementById('full-log');
+      el.innerHTML = lines.map(l=>`<span class="${logClass(l)}">${esc(l)}</span>`).join('\n');
+      el.scrollTop = el.scrollHeight;
+    }catch{}
+  }
+
+  /* ─────────────────────── MESSAGES ─────────────────────────── */
+  async function loadMessages(){
+    try{
+      const r = await fetch(API+'/messages'); const data = await r.json();
+      document.getElementById('msg-badge').textContent = data.length;
+      document.getElementById('mem-msg-badge').textContent = data.length;
+      if(!data.length){ 
+        const empty = emptyState('💬','No messages yet');
+        document.getElementById('messages-list').innerHTML=empty;
+        if(document.getElementById('mem-messages-list')) document.getElementById('mem-messages-list').innerHTML=empty;
+        return; 
+      }
+      const html = data.map(m=>{
+        const txt = m.content||'';
+        return `<div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(txt)}</div>
+            <div class="row-meta">${fmtTimeShort(m.timestamp)}</div>
+          </div>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(txt)})">Copy</button>
+          <span class="role-tag ${m.role==='user'?'role-user':'role-assistant'}">${esc(m.role)}</span>
+        </div>`;
+      }).join('');
+      document.getElementById('messages-list').innerHTML = html;
+      if(document.getElementById('mem-messages-list')) document.getElementById('mem-messages-list').innerHTML = html;
+    }catch{}
+  }
+
+  /* ─────────────────────── MEMORY ─────────────────────────── */
+  async function loadMemory(){
+    try{
+      const r = await fetch(API+'/memory'); const data = await r.json();
+      document.getElementById('mem-facts-badge').textContent = data.length;
+      const el = document.getElementById('mem-facts-list');
+      if(!data.length){ el.innerHTML=emptyState('💾','No facts'); return; }
+      el.innerHTML = data.map(m=>`
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(m.fact)}</div>
+            <div class="row-meta">${fmtTimeShort(m.timestamp)}</div>
+          </div>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(m.fact)})">Copy</button>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── ENTITIES ─────────────────────────── */
+  const ENT_PALETTE = ['rgba(0,240,255','rgba(167,139,250','rgba(52,211,153','rgba(251,191,36','rgba(248,113,113','rgba(244,114,182'];
+  async function loadEntities(){
+    try{
+      const r = await fetch(API+'/entities'); const data = await r.json();
+      document.getElementById('ent-badge').textContent = data.length;
+      const el = document.getElementById('entity-canvas');
+      if(!data.length){ el.innerHTML=emptyState('📡','No entities yet'); return; }
+      el.innerHTML='';
+      const W=el.offsetWidth||700, H=260;
+      const placed=[];
+      data.slice(0,20).forEach((ent,i)=>{
+        const c=ENT_PALETTE[i%ENT_PALETTE.length];
+        const node=document.createElement('div');
+        node.className='ent-node';
+        node.textContent=ent.name;
+        node.style.background=`${c},.1)`;
+        node.style.border=`1px solid ${c},.3)`;
+        node.style.color=`${c},.95)`;
+        node.style.animationDelay=(i*60)+'ms';
+        node.onclick = () => copyText(ent.name + ": " + ent.description);
+        let x,y,t=0;
+        do{ x=14+Math.random()*(W-170); y=14+Math.random()*(H-48); t++; }
+        while(t<40&&placed.some(p=>Math.abs(p.x-x)<150&&Math.abs(p.y-y)<44));
+        placed.push({x,y});
+        node.style.left=x+'px'; node.style.top=y+'px';
+        el.appendChild(node);
+      });
+    }catch{}
+  }
+
+  /* ─────────────────────── RELATIONS ─────────────────────────── */
+  async function loadRelations(){
+    try{
+      const r = await fetch(API+'/relations'); const data = await r.json();
+      document.getElementById('rel-badge').textContent = data.length;
+      const el = document.getElementById('relations-list');
+      if(!data.length){ el.innerHTML=emptyState('🔗','No relations'); return; }
+      el.innerHTML = data.map(rel=>`
+        <div class="rel-row activity-item" onclick="openModal('Relation Intelligence', '${esc(rel.source)} ${esc(rel.relation_type)} ${esc(rel.target)} strength: ${rel.strength}')">
+          <span class="rel-src">${esc(rel.source)}</span>
+          <span class="rel-arr">→</span>
+          <span class="rel-type">${esc(rel.relation_type)}</span>
+          <span class="rel-str">${(rel.strength||0).toFixed(2)}</span>
+          <button class="copy-btn" style="margin-left:auto" onclick="event.stopPropagation(); copyText('${esc(rel.source)} ${esc(rel.relation_type)} ${esc(rel.target)}')">Copy</button>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── BLUEPRINTS ─────────────────────────── */
+  async function loadBlueprints(){
+    try{
+      const r = await fetch(API+'/blueprints'); const data = await r.json();
+      const el = document.getElementById('blueprints-list');
+      document.getElementById('bp-badge').textContent = data.length;
+      if(!data.length){ el.innerHTML=emptyState('📦','No blueprints'); return; }
+      el.innerHTML = data.map((bp,i)=>`
+        <div class="list-row" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-size:9px;font-weight:700;color:var(--purple);letter-spacing:1px;text-transform:uppercase;">Blueprint #${i+1} · ${fmtTimeShort(bp.timestamp)}</div>
+            <button class="copy-btn" onclick="copyText(${JSON.stringify(bp.fact)})">Copy Blueprint</button>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.5;">${esc(bp.fact)}</div>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── ARCHIVES ─────────────────────────── */
+  async function loadArchives(){
+    try{
+      const r = await fetch(API+'/archives'); const data = await r.json();
+      const el = document.getElementById('archives-list');
+      document.getElementById('arch-badge').textContent = data.length;
+      if(!data.length){ el.innerHTML=emptyState('🗜️','No archives'); return; }
+      el.innerHTML = data.map(a=>`
+        <div class="list-row">
+          <div class="row-main">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--amber);margin-bottom:4px;">${esc(a.file)}</div>
+            <div style="font-size:11px;color:var(--muted);">Cycle ${a.data?.cycle??'?'}</div>
+          </div>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(JSON.stringify(a.data,null,2))})">Copy JSON</button>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── NOTES ─────────────────────────── */
+  async function loadNotes(){
+    try{
+      const r = await fetch(API+'/notes'); const data = await r.json();
+      document.getElementById('s-notes').textContent = data.length;
+      document.getElementById('notes-nav-badge').textContent = data.length;
+      if(!data.length){ document.getElementById('notes-grid').innerHTML=emptyState('📝','No notes yet — create one above!'); return; }
+      document.getElementById('notes-grid').innerHTML = data.map(n=>`
+        <div class="note-card">
+          <div class="note-accent" style="background:${esc(n.color)};"></div>
+          <div class="note-title">${esc(n.title)}</div>
+          <div class="note-content">${esc(n.content||'')}</div>
+          <div class="note-footer">
+            <div class="note-date">${fmtTimeShort(n.updated_at)}</div>
+            <button class="note-del" onclick="deleteNote(${n.id})" title="Delete">✕</button>
+          </div>
+        </div>`).join('');
+    }catch(e){ notify('Notes load error','#f87171'); }
+  }
+
+  async function createNote(){
+    const title   = document.getElementById('note-title').value.trim() || 'Untitled';
+    const content = document.getElementById('note-content').value.trim();
+    const color   = document.getElementById('note-color').value;
+    try{
+      const r = await fetch(API+'/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,content,color})});
+      if(!r.ok) throw new Error();
+      document.getElementById('note-title').value='';
+      document.getElementById('note-content').value='';
+      notify('Note saved ✓','#34d399');
+      loadNotes();
+    }catch{ notify('Failed to save note','#f87171'); }
+  }
+
+  async function deleteNote(id){
+    try{
+      await fetch(API+'/notes/'+id,{method:'DELETE'});
+      notify('Note deleted','#fbbf24');
+      loadNotes();
+    }catch{}
+  }
+
+  /* ─────────────────────── KEYS ─────────────────────────── */
+  const keyIcons = {OpenAI:'🟢',Anthropic:'🔺',Groq:'⚡',Google:'🔵','Google AI':'🔵',Pinecone:'🌲',Supabase:'⚡',Telegram:'✈️',Stripe:'💳',GitHub:'🐙',Slack:'💼',HuggingFace:'🤗',ElevenLabs:'🎙️',Vercel:'▲',Brave:'🦁',Firecrawl:'🔥',Venice:'🎨',OpenRouter:'🌐'};
+  const testableServices = ['openai','groq','anthropic','pinecone','supabase','telegram','github','elevenlabs','stripe'];
+
+  async function loadKeys(){
+    try{
+      const r = await fetch(API+'/keys'); const data = await r.json();
+      document.getElementById('keys-grid').innerHTML = data.map(k=>{
+        const icon  = keyIcons[k.name] || '🔑';
+        const svc   = k.name.toLowerCase().replace(/ /g,'');
+        const testable = testableServices.includes(svc);
+        return `<div class="key-card" id="kc-${svc}">
+          <div class="key-logo">${icon}</div>
+          <div class="key-info">
+            <div class="key-name">${esc(k.name)}</div>
+            <div class="key-masked">${esc(k.masked)}</div>
+          </div>
+          <span class="key-set-badge ${k.set?'key-set':'key-unset'}">${k.set?'SET':'UNSET'}</span>
+          ${testable&&k.set?`<button class="test-btn" id="tb-${svc}" onclick="testSvc('${svc}',this)">Test</button>`:''}
+        </div>`;
+      }).join('');
+    }catch{ notify('Could not load keys','#f87171'); }
+  }
+
+  async function testSvc(svc, btn){
+    btn.textContent = '…';
+    btn.className = 'test-btn';
+    try{
+      const r = await fetch(API+`/services/test/${svc}`,{method:'POST'});
+      const d = await r.json();
+      btn.textContent = d.ok ? '✓ '+( d.msg||'OK') : '✗ '+(d.msg||'Fail');
+      btn.className = 'test-btn '+(d.ok?'ok':'fail');
+      notify(`${svc}: ${d.ok?'connected':'failed'} — ${d.msg||''}`, d.ok?'#34d399':'#f87171');
+    }catch{
+      btn.textContent = '✗ Error';
+      btn.className = 'test-btn fail';
+    }
+  }
+
+  /* ─────────────────────── CHAT ─────────────────────────── */
+  async function sendChat(){
+    const inp = document.getElementById('chat-input');
+    const msg = inp.value.trim();
+    if(!msg) return;
+    inp.value = '';
+
+    const box = document.getElementById('chat-messages');
+    // Add user message
+    box.innerHTML += `<div class="chat-msg user">${esc(msg)}</div>`;
+    box.scrollTop = box.scrollHeight;
+
+    // Thinking indicator
+    const thinkId = 'think-'+Date.now();
+    box.innerHTML += `<div class="chat-msg assistant" id="${thinkId}"><div class="chat-thinking"><div class="think-dot"></div><div class="think-dot"></div><div class="think-dot"></div></div></div>`;
+    box.scrollTop = box.scrollHeight;
+
+    try{
+      const r = await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+      const d = await r.json();
+      const t = document.getElementById(thinkId);
+      if(t){ t.innerHTML = esc(d.content)+`<div class="chat-msg-meta">${esc(d.model)} · ${fmtTimeShort(d.timestamp)}</div>`; }
+      box.scrollTop = box.scrollHeight;
+    }catch{
+      const t = document.getElementById(thinkId);
+      if(t){ t.innerHTML = '⚠️ Chat API unavailable. Set GROQ_API_KEY or OPENAI_API_KEY in .env'; }
+    }
+  }
+
+  function chatKey(e){
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+  }
+
+  /* ─────────────────────── TELEGRAM MULTI-BOT ─────────────────────────── */
+  let activeBot = 'douglas';
+  function selBot(bot){
+    activeBot = bot;
+    document.querySelectorAll('#page-telegram .tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('btn-bot-'+bot).classList.add('active');
+    document.getElementById('active-bot-name').textContent = bot.toUpperCase();
+    notify(`Switched to ${bot} channel`,'#D4AF37');
+    fetchTgUpdates();
+  }
+
+  async function tgSendBig(){
+    const msg    = document.getElementById('tg-msg-big').value.trim();
+    const chatId = document.getElementById('tg-chat-id2').value.trim()||'';
+    const resEl  = document.getElementById('tg-big-result');
+    if(!msg){ notify('Enter message payload','#fbbf24'); return; }
+    resEl.textContent = 'Transmitting…';
+    try{
+      const r = await fetch(API+'/telegram/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,chat_id:chatId,bot_type:activeBot})});
+      const d = await r.json();
+      resEl.textContent = d.ok?'✓ TRANSMISSION SUCCESS':'✗ '+d.msg;
+      resEl.style.color = d.ok?'var(--green)':'var(--red)';
+      if(d.ok) notify(`Broadcast sent via ${activeBot} ✓`,'#34d399');
+    }catch(e){ resEl.textContent='Error: '+e.message; resEl.style.color='var(--red)'; }
+  }
+
+  async function testTelegram(){
+    const btn = document.getElementById('tg-test-btn');
+    btn.textContent='…';
+    try{
+      const r = await fetch(API+`/services/test/telegram?bot_type=${activeBot}`,{method:'POST'});
+      const d = await r.json();
+      btn.textContent = d.ok?'✓ ONLINE':'✗ FAIL';
+      btn.className = 'test-btn '+(d.ok?'ok':'fail');
+      notify(`${activeBot} bot: `+(d.ok?'online @'+d.msg:'failed'),'#34d399');
+    }catch{ btn.textContent='✗ Error'; btn.className='test-btn fail'; }
+  }
+
+  async function fetchTgUpdates(){
+    try{
+      const r = await fetch(API+`/telegram/updates?bot_type=${activeBot}`);
+      const d = await r.json();
+      const el = document.getElementById('tg-main-updates');
+      if(!el) return;
+      if(!d.ok || !d.updates.length){
+        el.innerHTML = emptyState('✈️', d.msg||`No messages found on ${activeBot} channel.`);
+        return;
+      }
+      el.innerHTML = d.updates.map(u=>`
+        <div class="list-row activity-item" onclick="copyText('${esc(u.text)}')">
+          <div class="row-main">
+            <div class="row-text" style="color:var(--gold)">@${esc(u.from)} transceiving:</div>
+            <div class="row-text" style="font-size:13px;">${esc(u.text)}</div>
+            <div class="row-meta">${fmtTimeShort(u.date)} · chat_id: ${esc(u.chat_id)}</div>
+          </div>
+        </div>`).join('');
+    }catch(e){ notify('TG fetch error: '+e.message,'#f87171'); }
+  }
+
+  /* ─────────────────────── MEMORY TABS ─────────────────────────── */
+  function memTab(tab){
+    document.querySelectorAll('#page-memory .tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#page-memory .tab-content').forEach(c=>c.classList.remove('active'));
+    document.querySelector(`#page-memory .tab-btn[onclick*="${tab}"]`).classList.add('active');
+    document.getElementById('mem-tab-'+tab).classList.add('active');
+    if(tab==='facts') loadMemory();
+    if(tab==='messages') loadMessages();
+    if(tab==='blueprints') loadBlueprints();
+    if(tab==='archives') loadArchives();
+  }
+
+  function copyText(txt){
+    navigator.clipboard.writeText(txt).then(()=>{
+      notify('Copied to clipboard ✓','#34d399');
+    }).catch(()=>{
+      // Fallback
+      const el = document.createElement('textarea');
+      el.value = txt; document.body.appendChild(el); el.select();
+      document.execCommand('copy'); document.body.removeChild(el);
+      notify('Copied to clipboard ✓','#34d399');
+    });
+  }
+
+  /* ─────────────────────── TERMINAL ─────────────────────────── */
+  async function runTermCmd(){
+    const inp = document.getElementById('term-input');
+    const cmd = inp.value.trim();
+    if(!cmd) return;
+    const out = document.getElementById('term-output');
+    termHistory.unshift(cmd);
+    termHistIdx = -1;
+    inp.value = '';
+    out.innerHTML += `\n<span style="color:var(--cyan);font-weight:700;">${document.querySelector('.term-prompt').textContent} ${esc(cmd)}</span>\n`;
+    out.scrollTop = out.scrollHeight;
+    try{
+      const r = await fetch(API+'/terminal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})});
+      const d = await r.json();
+      const color = d.exit_code===0?'rgba(255,255,255,.6)':'var(--red)';
+      out.innerHTML += `<span style="color:${color};">${esc(d.output)}</span>\n`;
+      if(d.cwd){
+        // Update prompt with folder name or full path
+        const folder = d.cwd.split(/[\\/]/).pop() || d.cwd;
+        document.querySelector('.term-prompt').textContent = `[${folder}] →`;
+        document.querySelector('.term-prompt').title = d.cwd;
+      }
+      out.scrollTop = out.scrollHeight;
+      loadTermHistory();
+    }catch(e){
+      out.innerHTML += `<span style="color:var(--red);">Error: ${esc(e.message)}</span>\n`;
+    }
+  }
+
+  function termKey(e){
+    const inp = document.getElementById('term-input');
+    if(e.key==='Enter'){ e.preventDefault(); runTermCmd(); }
+    else if(e.key==='ArrowUp'){
+      termHistIdx = Math.min(termHistIdx+1, termHistory.length-1);
+      inp.value = termHistory[termHistIdx]||'';
+    }
+    else if(e.key==='ArrowDown'){
+      termHistIdx = Math.max(termHistIdx-1, -1);
+      inp.value = termHistIdx>=0?(termHistory[termHistIdx]||''):'';
+    }
+  }
+
+  function clearTerminal(){
+    document.getElementById('term-output').innerHTML = 'Terminal cleared.\n';
+  }
+
+  async function loadTermHistory(){
+    try{
+      const r = await fetch(API+'/terminal/history'); const data = await r.json();
+      document.getElementById('term-hist-badge').textContent = data.length;
+      document.getElementById('term-history').innerHTML = data.length ? data.map(h=>`
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text" style="font-family:var(--mono);font-size:10.5px;">${esc(h.command)}</div>
+            <div class="row-meta">${fmtTimeShort(h.timestamp)} · exit ${h.exit_code}</div>
+          </div>
+          <button class="test-btn" onclick="rerunCmd(${JSON.stringify(h.command)})">↩</button>
+        </div>`).join('') : emptyState('','No history');
+    }catch{}
+  }
+
+  async function loadCmdPresets(){
+    try{
+      const r = await fetch(API+'/terminal/commands'); const data = await r.json();
+      document.getElementById('cmd-presets').innerHTML = data.map(c=>`
+        <div class="cmd-row" onclick="injectCmd(${JSON.stringify(c.cmd)})">
+          <span class="cmd-code">${esc(c.cmd)}</span>
+          <span class="cmd-desc">${esc(c.desc)}</span>
+        </div>`).join('');
+    }catch{}
+  }
+
+  function injectCmd(cmd){
+    document.getElementById('term-input').value = cmd;
+    document.getElementById('term-input').focus();
+  }
+  function rerunCmd(cmd){ injectCmd(cmd); runTermCmd(); }
+
+  /* ─────────────────────── GOOGLE MAPS ─────────────────────────── */
+  let map, mapLoaded = false;
+  let mapMarkers = [];
+
+  async function initMap() {
+    if (mapLoaded) return;
+    try {
+      const cfg = await fetch(API+'/map/config').then(r=>r.json());
+      if (!cfg.key) {
+        document.getElementById('map-loader').innerHTML = `<div style="color:var(--red); font-size:12px;">GOOGLE_API_KEY NOT SET</div>`;
+        return;
+      }
+
+      // Load SDK
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${cfg.key}&callback=startMapRendering&libraries=geometry`;
+      script.async = true;
+      script.defer = true;
+      window.startMapRendering = () => {
+        const mapOptions = {
+          center: cfg.center,
+          zoom: 11,
+          styles: [
+            { "elementType": "geometry", "stylers": [ { "color": "#12121e" } ] },
+            { "elementType": "labels.text.stroke", "stylers": [ { "color": "#12121e" } ] },
+            { "elementType": "labels.text.fill", "stylers": [ { "color": "#746855" } ] },
+            { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] },
+            { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] },
+            { "featureType": "poi.park", "elementType": "geometry", "stylers": [ { "color": "#18182a" } ] },
+            { "featureType": "road", "elementType": "geometry", "stylers": [ { "color": "#212133" } ] },
+            { "featureType": "road", "elementType": "geometry.stroke", "stylers": [ { "color": "#1c1c2b" } ] },
+            { "featureType": "road", "elementType": "labels.text.fill", "stylers": [ { "color": "#8a8a8a" } ] },
+            { "featureType": "water", "elementType": "geometry", "stylers": [ { "color": "#0e0e18" } ] }
+          ],
+          disableDefaultUI: true,
+          zoomControl: true,
+        };
+        map = new google.maps.Map(document.getElementById('google-map'), mapOptions);
+        mapLoaded = true;
+        document.getElementById('map-loader').style.display = 'none';
+        loadMapMarkers();
+      };
+      document.head.appendChild(script);
+    } catch(e) {
+      document.getElementById('map-loader').innerHTML = `<div style="color:var(--red); font-size:12px;">Map initialization failed</div>`;
+    }
+  }
+
+  async function loadMapMarkers() {
+    if (!mapLoaded) return;
+    try {
+      const res = await fetch(API+'/map/markers');
+      const data = await res.json();
+      
+      // Clear old
+      mapMarkers.forEach(m => m.setMap(null));
+      mapMarkers = [];
+
+      data.forEach(m => {
+        const marker = new google.maps.Marker({
+          position: { lat: m.lat, lng: m.lng },
+          map: map,
+          title: m.name,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: m.type==='lead'?'#fbbf24':'#00f0ff',
+            fillOpacity: 0.9,
+            strokeColor: '#fff',
+            strokeWeight: 1,
+            scale: 8
+          }
+        });
+
+        marker.addListener('click', () => {
+          showIntel(m);
+        });
+        mapMarkers.push(marker);
+      });
+    } catch(e) {}
+  }
+
+  function showIntel(m) {
+    const el = document.getElementById('map-intel-overlay');
+    document.getElementById('intel-entity').textContent = m.entity || 'Entity Intel';
+    document.getElementById('intel-name').textContent = m.name;
+    document.getElementById('intel-body').textContent = m.intel || 'No intelligence gathered yet.';
+    el.style.display = 'block';
+  }
+
+  function closeIntel() {
+    document.getElementById('map-intel-overlay').style.display = 'none';
+  }
+
+  /* ─────────────────────── REFRESH ALL ─────────────────────────── */
+  async function refreshAll(){
+    await Promise.allSettled([
+      loadStats(), loadRecentActivity(),
+    ]);
+    // Load current page data
+    if(currentPage==='overview') loadRecentActivity();
+    if(currentPage==='terminal') loadTermHistory();
+    if(currentPage==='notes') loadNotes();
+    if(currentPage==='keys') loadKeys();
+    if(currentPage==='telegram') fetchTgUpdates();
+    if(currentPage==='entities') loadEntities(), loadRelations();
+    if(currentPage==='memory') loadMemory(), loadBlueprints(), loadArchives();
+    if(currentPage==='logs') loadFullLog();
+  }
+
+  /* ─────────────────────── BOOT ─────────────────────────── */
+  refreshAll();
+  setInterval(refreshAll, 8000);
+  // Initial loads for terminal presets
+  loadCmdPresets();
+</script>
+</body>
+</html>

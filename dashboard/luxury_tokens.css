@@ -1,0 +1,102 @@
+/* ═══════════════════════════════════════════════
+   THE SOVEREIGN DESIGN SYSTEM — Billionaire Tier
+   ═══════════════════════════════════════════════ */
+
+:root {
+    /* Base Palette */
+    --gold:        #D4AF37;
+    --gold-bright: #FFD700;
+    --gold-dark:   #996515;
+    
+    --chrome:      #E5E4E2;
+    --chrome-low:  #B0B0B0;
+    
+    --obsidian:    #050505;
+    --obsidian-v2: #0A0A0A;
+    --obsidian-v3: #121212;
+    
+    --velocity-red: #C41E3A;
+    --danger:      #FF0000;
+    
+    /* Semantic Mapping */
+    --bg:          var(--obsidian);
+    --bg2:         var(--obsidian-v2);
+    --bg3:         var(--obsidian-v3);
+    
+    --surf:        rgba(255, 255, 255, 0.02);
+    --surf2:       rgba(255, 255, 255, 0.05);
+    
+    --bord:        rgba(229, 228, 226, 0.08); /* Chrome hint */
+    --bord-gold:   rgba(212, 175, 55, 0.2);
+    
+    --txt:         #FFFFFF;
+    --muted:       rgba(255, 255, 255, 0.4);
+    --muted2:      rgba(255, 255, 255, 0.15);
+    
+    --accent:      var(--gold);
+    --primary:     var(--gold);
+    
+    /* Gradients */
+    --grad-gold:   linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-bright) 100%);
+    --grad-chrome: linear-gradient(135deg, #71706E 0%, var(--chrome) 50%, #A09F9D 100%);
+    --grad-dark:   linear-gradient(180deg, var(--obsidian) 0%, var(--obsidian-v2) 100%);
+    
+    /* Glassmorphism v2 */
+    --glass-bg:    rgba(5, 5, 5, 0.6);
+    --glass-blur:  24px;
+}
+
+/* Luxury Utilities */
+.gold-text {
+    background: var(--grad-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+.chrome-border {
+    border: 1px solid var(--bord);
+    position: relative;
+}
+
+.chrome-border::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(229, 228, 226, 0.05);
+    pointer-events: none;
+}
+
+.glow-gold {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+.metallic-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.metallic-shine::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0) 45%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 55%,
+        transparent 100%
+    );
+    transform: rotate(-45deg);
+    animation: shine 6s infinite;
+    pointer-events: none;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) rotate(-45deg); }
+    20%, 100% { transform: translateX(100%) rotate(-45deg); }
+}

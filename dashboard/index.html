@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sovereign Architect — Mission Control v2.5</title>
+  <meta name="description" content="Ultimate Strategic Intelligence Platform for the King Dripping Swag 6-Tier Brain.">
+  
+  <!-- Premium Frameworks -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Sovereign Design System -->
+  <link rel="stylesheet" href="blast_ui.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#FFD700',
+            obsidian: '#050505',
+            lime: '#32CD32',
+            purple: '#1a0a2e'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Orbitron', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Overrides & Page Transitions */
+    .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s cubic-bezier(0.2, 0, 0, 1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    
+    .nav-item.active {
+      @apply bg-white/5 font-semibold text-white;
+      box-shadow: inset 2px 0 0 var(--gold);
+    }
+  </style>
+
+</head>
+  <!-- ── REVENUE TICKER (TOP BAR) ── -->
+  <div class="revenue-ticker">
+    <div class="ticker-content" id="revenue-ticker-content">
+      <div class="ticker-item"><span class="text-gold">◈</span> ROI: <span id="ticker-roi">0.0x</span></div>
+      <div class="ticker-item"><span class="text-gold">◈</span> CVR: <span id="ticker-cvr">0.00%</span></div>
+      <div class="ticker-item"><span class="text-gold">◈</span> PROFIT: <span id="ticker-profit" class="gold-glow-text">$0.00</span></div>
+      <div class="ticker-item"><span class="text-gold">◈</span> SWARM NODES: <span id="ticker-nodes" class="text-lime">11 ACTIVE</span></div>
+      <div class="ticker-item"><span class="text-gold">◈</span> STRATEGY: <span id="ticker-strategy">DUBAI REAL ESTATE</span></div>
+    </div>
+  </div>
+
+  <!-- 3D Spatial Context -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="shell flex min-h-screen relative z-10">
+    
+    <!-- ── PREMIUM SIDEBAR ── -->
+    <aside class="w-72 flex-shrink-0 sticky top-0 h-screen border-r border-white/5 bg-black/40 backdrop-blur-3xl p-8 flex flex-col gap-8">
+      <div class="brand flex flex-col gap-2">
+        <div class="text-[10px] tracking-[0.3em] font-heading font-black text-gold uppercase opacity-80">Autonomous Strategic Asset</div>
+        <h1 class="text-3xl font-heading font-extrabold gold-text leading-tight">KINGSDriven</h1>
+        <div class="w-12 h-1 bg-gold rounded-full"></div>
+      </div>
+
+      <nav class="flex flex-col gap-2" id="sidebar-nav">
+        <!-- Populated via script -->
+      </nav>
+
+      <div class="mt-auto pt-8 border-t border-white/5">
+        <div class="flex items-center gap-4 p-4 glass-card">
+          <div class="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold font-bold">DA</div>
+          <div class="flex flex-col">
+            <div class="text-[10px] text-muted uppercase tracking-wider">Authenticated</div>
+            <div class="text-xs font-bold text-white/90">Sovereign Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── DYNAMIC CONTENT ENGINE ── -->
+    <main class="flex-1 overflow-y-auto px-12 py-10 relative" id="main-scroll">
+      
+      <!-- ══════════ PAGE: OVERVIEW ══════════ -->
+      <div class="page active" id="page-overview">
+        <!-- Premium Top Bar -->
+      <header class="flex justify-between items-end mb-16 reveal">
+        <div class="flex flex-col gap-1">
+          <div class="text-xs font-mono text-gold/60 uppercase tracking-[0.2em]" id="ts-update">Synchronizing Neural Lattice...</div>
+          <h2 class="text-5xl font-heading font-black tracking-tight"><span class="text-white/40">MASTER</span> COMMAND</h2>
+        </div>
+        <div class="flex gap-4">
+          <div id="connection-status" class="flex gap-4 p-2 px-4 glass-card text-[10px] items-center font-black uppercase tracking-widest">
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-gold animate-ping"></div> GCP: <span id="st-gcp" class="text-gold">WAIT</span></div>
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-white/20"></div> GH: <span id="st-gh" class="text-muted">WAIT</span></div>
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-purple-500"></div> AG: <span id="st-ag" class="text-purple-400">WAIT</span></div>
+          </div>
+          <button onclick="refreshAll()" class="px-6 py-3 glass-card text-xs font-bold tracking-widest uppercase hover:bg-gold/10">Sync Ecosystem</button>
+        </div>
+      </header>
+
+      <!-- MASTER STATS CLUSTER -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+        <div class="glass-card p-6 reveal-delay-1">
+          <div class="text-[10px] text-muted uppercase tracking-[0.2em] mb-1">Neural Cycles</div>
+          <div class="text-4xl font-heading font-black gold-text" id="s-cycles">0</div>
+        </div>
+        <div class="glass-card p-6 reveal-delay-2">
+          <div class="text-[10px] text-muted uppercase tracking-[0.2em] mb-1">Core Facts</div>
+          <div class="text-4xl font-heading font-black text-white" id="s-memory">0</div>
+        </div>
+        <div class="glass-card p-6 reveal-delay-3">
+          <div class="text-[10px] text-muted uppercase tracking-[0.2em] mb-1">Strategic Notes</div>
+          <div class="text-4xl font-heading font-black text-white" id="s-notes">0</div>
+        </div>
+        <div class="glass-card p-6 reveal-delay-4">
+          <div class="text-[10px] text-muted uppercase tracking-[0.2em] mb-1">Intelligence Msgs</div>
+          <div class="text-4xl font-heading font-black text-white" id="s-messages">0</div>
+        </div>
+      </div>
+
+      <!-- Hidden for JS compatibility but needed to prevent errors -->
+      <div class="hidden">
+        <div id="s-entities">0</div>
+        <div id="s-relations">0</div>
+        <div id="s-bots">0</div>
+        <div id="s-archives">0</div>
+        <div id="notes-nav-badge">0</div>
+        <div id="sidebar-dot"></div>
+        <div id="sidebar-status"></div>
+      </div>
+
+      <!-- AGENT HIVE MAP (CENTRAL VISUALIZATION) -->
+      <div class="reveal mb-12 relative h-[500px] glass-card overflow-hidden group sharp-card">
+        <div id="agent-hive-container" class="absolute inset-0 z-0 bg-[#050505]/40">
+           <!-- SVG Agent Hive rendered here -->
+            <svg id="agent-hive-svg" width="100%" height="100%" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+             <defs>
+               <filter id="glow">
+                 <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                 <feMerge>
+                   <feMergeNode in="coloredBlur"/>
+                   <feMergeNode in="SourceGraphic"/>
+                 </feMerge>
+               </filter>
+             </defs>
+             <!-- Connections -->
+             <g id="hive-links" stroke="rgba(212,175,55,0.15)" stroke-width="1"></g>
+             <!-- Nodes -->
+             <g id="hive-nodes" filter="url(#glow)"></g>
+           </svg>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-[1] pointer-events-none"></div>
+        <div class="absolute bottom-6 left-8 z-10 pointer-events-none">
+          <div class="text-[10px] font-mono text-gold tracking-widest uppercase mb-1">Neural Topology</div>
+          <div class="text-2xl font-heading font-black orbitron-heading">AGENT HIVE MAP v1.0</div>
+        </div>
+        <div class="absolute top-6 right-8 z-10">
+          <div class="px-4 py-2 glass-panel sharp-card text-[10px] font-bold tracking-widest uppercase text-gold/60">Sovereign Swarm Synchronized</div>
+        </div>
+      </div>
+
+      <div class="flex gap-6 mb-12">
+        <!-- MAIN FEED -->
+        <div class="flex-1 flex flex-col gap-6">
+          <div class="sec-header reveal">
+            <div class="sec-title orbitron-heading">⬡ NEURAL ACTIVITY FEED</div>
+            <div class="sec-line"></div>
+            <div class="sec-tag text-lime">LATEST FROM EMPIRE</div>
+          </div>
+          
+          <div class="glass reveal activity-feed sharp-card" id="main-activity-feed" style="max-height:800px;overflow-y:auto;">
+            <div style="padding:60px;text-align:center;color:var(--muted2);">Synchronizing with neural lattice…</div>
+          </div>
+        </div>
+
+        <!-- MONEY STREAM TERMINAL -->
+        <div class="w-96 flex flex-col gap-6">
+          <div class="sec-header reveal">
+            <div class="sec-title orbitron-heading">💰 MONEY STREAM</div>
+            <div class="sec-line"></div>
+            <div class="sec-tag text-gold">REVENUE LOGS</div>
+          </div>
+          
+          <div class="money-stream glass-panel sharp-card reveal h-[400px] mb-6" id="money-stream-log">
+             <div class="stream-entry">>> Awaiting first transaction...</div>
+          </div>
+
+          <div class="sec-header reveal">
+            <div class="sec-title orbitron-heading">📋 LIVE INFRA LOGS</div>
+            <div class="sec-line"></div>
+          </div>
+          <div class="glass-panel sharp-card reveal h-[415px] p-4 overflow-hidden bg-black/80">
+            <pre id="mini-log" class="text-[10px] font-mono text-white/40 h-full overflow-y-auto"></pre>
+          </div>
+        </div>
+      </div>
+
+        </div>
+      </div> <!-- End page-overview -->
+
+    <!-- ══════════ PAGE: CHAT ══════════ -->
+    <div class="page" id="page-chat">
+      <div class="sec-header reveal"><div class="sec-title">💬 Agent Chat</div><div class="sec-line"></div><div class="sec-tag">Groq / OpenAI</div></div>
+      <div class="glass reveal chat-wrap" style="margin-bottom:16px;">
+        <div id="chat-messages">
+          <div class="chat-msg assistant">👑 Gravity-Hermes online. How can I help you build the King Dripping Swag empire today?</div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" rows="1" placeholder="Ask the agent anything… strategy, leads, code, execution…" onkeydown="chatKey(event)"></textarea>
+          <button class="btn btn-purple btn-sm" onclick="sendChat()">Send ↑</button>
+        </div>
+      </div>
+
+      <!-- Discord bridge in chat -->
+      <div class="sec-header reveal"><div class="sec-title">🎮 Discord Bridge</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📤</div>Send Embed</div>
+          </div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;">
+            <select id="discord-bot-type" style="background:rgba(255,255,255,.04);border:1px solid var(--bord2);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:12px;color:#fff;outline:none;">
+              <option value="operator">Operator (Default)</option>
+              <option value="sentinel">Sentinel</option>
+              <option value="hermes">Hermes</option>
+              <option value="agentzero">AgentZero</option>
+              <option value="douglas">Douglas</option>
+            </select>
+            <div class="tg-row" style="padding:0;">
+              <input id="discord-input" placeholder="Message to send to Discord…" style="flex:1;"/>
+              <button class="btn btn-cyan btn-sm" onclick="discordSend()">Send</button>
+            </div>
+            <div id="discord-result" style="font-size:11px;color:var(--muted);font-family:var(--mono);padding-top:4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: TERMINAL ══════════ -->
+    <div class="page" id="page-terminal">
+      <div class="sec-header reveal"><div class="sec-title">⌨️ Terminal</div><div class="sec-line"></div><div class="sec-tag">Safe Shell</div></div>
+      <div class="grid-2 reveal" style="margin-bottom:16px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="terminal-wrap">
+            <div class="terminal-bar">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="term-btns"><div class="tbtn r"></div><div class="tbtn y"></div><div class="tbtn g"></div></div>
+                <span style="font-family:var(--mono);font-size:11.5px;color:var(--muted);">gravity-claw shell</span>
+              </div>
+              <button class="test-btn" onclick="clearTerminal()">Clear</button>
+            </div>
+            <pre id="term-output">King Dripping Swag Shell v2.0 — Type a command below or click a preset.\n</pre>
+            <div class="term-input-row">
+              <span class="term-prompt">→</span>
+              <input id="term-input" placeholder="Enter command…" onkeydown="termKey(event)" autocomplete="off" spellcheck="false">
+              <button class="btn btn-cyan btn-sm" onclick="runTermCmd()">Run</button>
+            </div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📘</div>Command Presets</div>
+          </div>
+          <div class="cmd-list" id="cmd-presets">
+            <div style="padding:24px;text-align:center;color:var(--muted2);font-size:12px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+      <div class="glass reveal">
+        <div class="panel-head">
+          <div class="panel-head-left"><div class="panel-icon">📜</div>Command History</div>
+          <span class="panel-badge" id="term-hist-badge">0</span>
+        </div>
+        <div class="panel-body" id="term-history">
+          <div style="padding:24px;text-align:center;color:var(--muted2);font-size:12px;">No history yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: MEMORY ══════════ -->
+    <div class="page" id="page-memory">
+      <div class="sec-header reveal"><div class="sec-title">🧠 6-Tier Intelligence Memory</div><div class="sec-line"></div></div>
+      
+      <div class="tabs-header reveal">
+        <button class="tab-btn active" onclick="memTab('facts')">Facts</button>
+        <button class="tab-btn" onclick="memTab('messages')">Messages</button>
+        <button class="tab-btn" onclick="memTab('blueprints')">Blueprints</button>
+        <button class="tab-btn" onclick="memTab('archives')">Archives</button>
+      </div>
+
+      <div class="glass reveal">
+        <!-- Tab: Facts -->
+        <div class="tab-content active" id="mem-tab-facts">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🧩</div>Core Memory Facts</div>
+            <span class="panel-badge" id="mem-facts-badge">0</span>
+          </div>
+          <div class="panel-body" id="mem-facts-list"></div>
+        </div>
+
+        <!-- Tab: Messages -->
+        <div class="tab-content" id="mem-tab-messages">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">💬</div>All Agent Messages</div>
+            <span class="panel-badge" id="mem-msg-badge">0</span>
+          </div>
+          <div class="panel-body" id="mem-messages-list"></div>
+        </div>
+
+        <!-- Tab: Blueprints -->
+        <div class="tab-content" id="mem-tab-blueprints">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📦</div>Sellable Blueprints</div>
+            <span class="panel-badge" id="bp-badge">0</span>
+          </div>
+          <div class="panel-body" id="blueprints-list"></div>
+        </div>
+
+        <!-- Tab: Archives -->
+        <div class="tab-content" id="mem-tab-archives">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🗜️</div>Cycle Archives</div>
+            <span class="panel-badge" id="arch-badge">0</span>
+          </div>
+          <div class="panel-body" id="archives-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: ENTITIES ══════════ -->
+    <div class="page" id="page-entities">
+      <div class="sec-header reveal"><div class="sec-title">📡 Entity Graph</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📡</div>Entity Nodes</div>
+            <span class="panel-badge" id="ent-badge">0</span>
+          </div>
+          <div id="entity-canvas">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted2);font-size:12px;">No entities</div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🔗</div>Relations</div>
+            <span class="panel-badge" id="rel-badge">0</span>
+          </div>
+          <div class="panel-body" id="relations-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">No relations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: LIVE LOGS ══════════ -->
+    <div class="page" id="page-logs">
+      <div class="sec-header reveal"><div class="sec-title">📋 Live Logs</div><div class="sec-line"></div><div class="sec-tag">agent_progress.log</div></div>
+      <div class="terminal-wrap reveal">
+        <div class="terminal-bar">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="term-btns"><div class="tbtn r"></div><div class="tbtn y"></div><div class="tbtn g"></div></div>
+            <span style="font-family:var(--mono);font-size:11.5px;color:var(--muted);">agent_progress.log — live</span>
+          </div>
+          <span class="panel-badge" id="log-lines-badge">0 lines</span>
+        </div>
+        <pre id="full-log" style="font-family:var(--mono);font-size:11px;line-height:1.75;padding:16px 18px;max-height:520px;overflow-y:auto;color:rgba(255,255,255,.32);white-space:pre-wrap;word-break:break-all;"></pre>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: NOTES ══════════ -->
+    <div class="page" id="page-notes">
+      <div class="sec-header reveal"><div class="sec-title">📝 Notes</div><div class="sec-line"></div><div class="sec-tag">Your knowledge base</div></div>
+      <div class="glass reveal">
+        <div class="panel-head">
+          <div class="panel-head-left"><div class="panel-icon">✏️</div>New Note</div>
+        </div>
+        <div class="note-add">
+          <div style="display:flex;gap:8px;">
+            <input class="note-in" id="note-title" placeholder="Title…" style="flex:1;"/>
+            <input class="note-in" id="note-color" type="color" value="#7c3aed" style="width:40px;padding:4px;cursor:pointer;">
+          </div>
+          <textarea class="note-in" id="note-content" placeholder="Content — strategies, leads, code snippets, observations…"></textarea>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn btn-purple btn-sm" onclick="createNote()">+ Add Note</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;" id="notes-container">
+        <div class="notes-grid" id="notes-grid">
+          <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Loading notes…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: API KEYS ══════════ -->
+    <div class="page" id="page-keys">
+      <div class="sec-header reveal"><div class="sec-title">🔑 API Keys</div><div class="sec-line"></div><div class="sec-tag">Read from .env</div></div>
+      <div class="glass reveal" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <div class="panel-head-left"><div class="panel-icon">ℹ️</div>Keys are masked — never exposed in full</div>
+        </div>
+        <div class="keys-grid" id="keys-grid">
+          <div style="padding:32px;color:var(--muted2);font-size:12px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: DISCORD ══════════ -->
+    <div class="page" id="page-discord">
+      <div class="sec-header reveal"><div class="sec-title">🎮 MULTI-CHANNEL DISCORD COMMAND</div><div class="sec-line"></div></div>
+      
+      <!-- AGENT SELECTOR -->
+      <div class="tabs-header reveal">
+        <button class="tab-btn active" id="btn-bot-douglas" onclick="selBot('douglas')">Douglas</button>
+        <button class="tab-btn" id="btn-bot-hermes" onclick="selBot('hermes')">Hermes</button>
+        <button class="tab-btn" id="btn-bot-sentinel" onclick="selBot('sentinel')">Sentinel</button>
+        <button class="tab-btn" id="btn-bot-agentzero" onclick="selBot('agentzero')">AgentZero</button>
+        <button class="tab-btn" id="btn-bot-operator" onclick="selBot('operator')">Operator</button>
+      </div>
+
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📤</div>Active Broadcast: <span id="active-bot-name" style="color:var(--gold);margin-left:4px;">DOUGLAS</span></div>
+            <button class="test-btn" id="discord-test-btn" onclick="testDiscord()">Test Ping</button>
+          </div>
+          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <label style="font-size:11px;color:var(--muted);">TRANSMIT PAYLOAD</label>
+            <textarea class="note-in" id="discord-msg-big" placeholder="Enter message to broadcast through this specific neural channel…" style="min-height:120px;"></textarea>
+            <button class="btn btn-cyan" onclick="discordSendBig()" style="height:48px;font-size:14px;">📤 BROADCAST TO CHANNEL</button>
+            <div id="discord-big-result" style="font-size:11px;font-family:var(--mono);color:var(--muted);text-align:center;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: INFRASTRUCTURE ══════════ -->
+    <div class="page" id="page-infra">
+      <div class="sec-header reveal"><div class="sec-title">☁️ Infrastructure (Google Cloud)</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">💳</div>Sovereign Payment Hub (Stripe)</div>
+          </div>
+          <div class="panel-body" id="payment-hub-body" style="padding:20px;">
+            <div id="payment-status" style="font-size:14px; margin-bottom:15px;">Loading Payment status…</div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">📂</div>Workspace Intelligence</div>
+          </div>
+          <div class="panel-body" id="workspace-status-body" style="padding:20px;">
+             <div id="workspace-status" style="font-size:14px; margin-bottom:15px;">Loading Workspace…</div>
+          </div>
+        </div>
+      </div>
+      <div class="glass reveal" style="margin-top:16px;">
+        <div class="panel-head"><div class="panel-head-left"><div class="panel-icon">🚀</div>Infrastructure Controls</div></div>
+        <div class="panel-body" style="padding:20px; display:flex; gap:12px;">
+          <button onclick="infraCmd('provision_vm')" class="btn btn-gold btn-sm">Provision High-Compute VM</button>
+          <button onclick="notify('Command Center Sync Initiated','var(--gold)')" class="btn btn-ghost btn-sm">Sync All Nodes</button>
+        </div>
+      </div>
+      <div class="glass reveal" style="margin-top:16px;">
+        <div class="panel-head"><div class="panel-head-left"><div class="panel-icon">⚙️</div>Project Configuration</div></div>
+        <div class="panel-body" id="infra-project-config" style="padding:20px; font-family:var(--mono); font-size:12px; color:var(--muted);">
+          Loading config…
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: REPOSITORY ══════════ -->
+    <div class="page" id="page-repo">
+      <div class="sec-header reveal"><div class="sec-title">🐙 Repository (GitHub)</div><div class="sec-line"></div></div>
+      <div class="grid-2 reveal">
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">⚡</div>Recent Commits</div>
+          </div>
+          <div class="panel-body" id="repo-commits-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Loading commits…</div>
+          </div>
+        </div>
+        <div class="glass">
+          <div class="panel-head">
+            <div class="panel-head-left"><div class="panel-icon">🛠️</div>Open Issues</div>
+          </div>
+          <div class="panel-body" id="repo-issues-list">
+            <div style="padding:32px;text-align:center;color:var(--muted2);font-size:12px;">Loading issues…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- end main -->
+    </div><!-- end shell -->
+
+    <!-- MODAL -->
+    <div id="modal-overlay" onclick="closeModal()">
+      <div id="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <div id="modal-title" style="font-weight:800;letter-spacing:1px;color:var(--gold);">DETAIL</div>
+          <button onclick="closeModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+          <button class="btn btn-gold btn-sm" id="btn-modal-copy">Copy Content</button>
+        </div>
+      </div>
+    </div>
+
+<!-- NOTIF CONTAINER -->
+<div id="notif"></div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+  const API = `${window.location.origin}/api`;
+  let currentPage = 'overview';
+  let termHistory = [], termHistIdx = -1;
+
+  /* ── NAV CONFIG ── */
+  const NAV_ITEMS = [
+    { id: 'overview',  icon: '◈', label: 'Overview' },
+    { id: 'chat',      icon: '💬', label: 'Neural Uplink' },
+    { id: 'terminal',  icon: '⌨️', label: 'Shell Access' },
+    { id: 'memory',    icon: '🧠', label: 'Intelligence' },
+    { id: 'entities',  icon: '📡', label: 'Graph View' },
+    { id: 'notes',     icon: '📝', label: 'Strategy' },
+    { id: 'infra',     icon: '☁️', label: 'Infrastructure' },
+    { id: 'repo',      icon: '🐙', label: 'Repository' },
+    { id: 'discord',  icon: '🎮', label: 'Discord' },
+    { id: 'logs',      icon: '📜', label: 'System Logs' },
+    { id: 'keys',      icon: '🔑', label: 'Credentials' }
+  ];
+
+  function initSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    nav.innerHTML = NAV_ITEMS.map(i => `
+      <button onclick="nav('${i.id}')" id="nav-${i.id}" class="nav-item ${i.id==='overview'?'active':''}">
+        <span class="text-xl opacity-80">${i.icon}</span>
+        <span class="text-xs font-bold tracking-widest uppercase">${i.label}</span>
+      </button>
+    `).join('');
+  }
+  initSidebar();
+
+  /* ── BILLIONAIRE PARALLAX SCRIPT ── */
+  const pContainer = document.getElementById('main-scroll');
+  const layers = document.querySelectorAll('.parallax-layer');
+  if(pContainer) {
+    pContainer.addEventListener('scroll', () => {
+      const top = pContainer.scrollTop;
+      layers.forEach(layer => {
+        const speed = layer.getAttribute('data-speed');
+        const yPos = -(top * speed);
+        layer.style.transform = `translateY(${yPos}px)`;
+      });
+    });
+  }
+
+  /* ── TICKER ── */
+  const TICKS = ['KINGSDriven.io','Billionaire Pipeline','Elite Automation','Sovereign Systems','Global Empire','Mission Control v2','Neural Network','Tier 6 Brain','Asset Management','High-Ticket AI'];
+  const tk = document.getElementById('revenue-ticker-content');
+  if(tk) {
+    [...TICKS,...TICKS].forEach(t=>{
+      const el = document.createElement('div');
+      el.className = 'ticker-item';
+      el.innerHTML = `<span style="color:var(--gold);opacity:.8">◈</span> ${t}`;
+      tk.appendChild(el);
+    });
+  }
+
+  /* ── SCROLL REVEAL ── */
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
+  },{threshold:.1});
+  function observeAll(){ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el)); }
+  observeAll();
+
+  /* ── HELPERS ── */
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtTime(ts){
+    try{ const d=new Date(ts); return isNaN(d)?ts:d.toLocaleString(); }catch{ return ts||'–'; }
+  }
+  function fmtTimeShort(ts){
+    try{ const d=new Date(ts); return isNaN(d)?ts:d.toLocaleTimeString(); }catch{ return ts||'–'; }
+  }
+  function notify(msg,color='#34d399'){
+    const stack=document.getElementById('notif');
+    const n=document.createElement('div');
+    n.className='notif';
+    n.style.borderColor = color+'44';
+    n.innerHTML=`<span style="color:${color};font-size:15px;">●</span>${esc(msg)}`;
+    stack.appendChild(n);
+    setTimeout(()=>n.style.opacity='0',3000);
+    setTimeout(()=>n.remove(),3400);
+  }
+  function logClass(l){
+    if(/ERROR|FATAL/i.test(l)) return 'log-line-error';
+    if(/CYCLE \d+ ACTIVE|Iteration \d+/i.test(l)) return 'log-line-cycle';
+    if(/complete|ready|success|SYNC/i.test(l)) return 'log-line-success';
+    if(/WARN/i.test(l)) return 'log-line-warn';
+    return 'log-line-info';
+  }
+  function emptyState(icon,msg){ return `<div style="padding:36px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;"><div style="font-size:26px;opacity:.35">${icon}</div><div style="font-size:12px;color:var(--muted2);">${msg}</div></div>`; }
+
+  /* ── NAV ── */
+  function nav(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    document.getElementById('nav-'+page)?.classList.add('active');
+    currentPage = page;
+    // Trigger page-specific loads
+    if(page==='terminal') loadTermHistory(), loadCmdPresets();
+    if(page==='map') initMap();
+    if(page==='notes') loadNotes();
+    if(page==='keys') loadKeys();
+    if(page==='map') loadMapMarkers();
+    if(page==='discord') {}
+    if(page==='entities') loadEntities(), loadRelations();
+    if(page==='memory') loadMemory(), loadBlueprints(), loadArchives();
+    if(page==='logs') loadFullLog();
+    if(page==='infra') loadInfraStatus();
+    if(page==='repo') loadRepoActivity();
+    // Animate reveals in new page
+    setTimeout(observeAll, 20);
+  }
+
+  /* ── CONNECTION SYNC ── */
+  async function syncConnectivity(){
+    try {
+      const gcpR = await fetch(API+'/gcp/status');
+      const gcpD = await gcpR.json();
+      const elGcp = document.getElementById('st-gcp');
+      elGcp.textContent = gcpD.vertex_ai === 'ACTIVE' ? 'LIVE' : 'OFFLINE';
+      elGcp.style.color = gcpD.vertex_ai === 'ACTIVE' ? 'var(--gold)' : 'var(--red)';
+
+      const sysR = await fetch(API+'/system/control');
+      const sysD = await sysR.json();
+      const elAg = document.getElementById('st-ag');
+      elAg.textContent = sysD.agent_running ? 'HEARTBEAT' : 'STALLED';
+      elAg.style.color = sysD.agent_running ? '#A78BFA' : 'var(--red)';
+
+      const gitR = await fetch(API+'/github/repo');
+      const gitD = await gitR.json();
+      const elGh = document.getElementById('st-gh');
+      elGh.textContent = gitD.error ? 'ERROR' : 'SYNCED';
+      elGh.style.color = gitD.error ? 'var(--red)' : '#FFF';
+    } catch(e) {}
+  }
+  setInterval(syncConnectivity, 5000);
+  syncConnectivity();
+
+  /* ─────────────────────── INFRA & REPO ─────────────────────────── */
+  async function loadInfraStatus(){
+    try {
+      const r = await fetch(API+'/gcp/status');
+      const d = await r.json();
+      const v = document.getElementById('infra-vertex-status');
+      const g = document.getElementById('infra-gcs-status');
+      const c = document.getElementById('infra-project-config');
+
+      v.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Gemma 4 26B (Vertex)</span>
+          <span class="role-tag" style="background:${d.vertex_ai==='ACTIVE'?'rgba(52,211,153,.1)':'rgba(196,30,58,.1)'}; color:${d.vertex_ai==='ACTIVE'?'#34d399':'var(--red)'}">${d.vertex_ai}</span>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:var(--muted);">Endpoint: ${esc(d.vertex_endpoint)}</div>
+      `;
+
+      g.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Cloud Storage Backups</span>
+          <span class="role-tag" style="background:${d.gcs==='ACTIVE'?'rgba(52,211,153,.1)':'rgba(196,30,58,.1)'}; color:${d.gcs==='ACTIVE'?'#34d399':'var(--red)'}">${d.gcs}</span>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:var(--muted);">Bucket: ${esc(d.bucket)}</div>
+      `;
+
+      c.innerHTML = `
+        PROJECT_ID: ${esc(d.project)}
+        LOCATION:   ${esc(d.location)}
+        ACTIVE_VMS: ${d.active_vms || 0}
+        LAST_SYNC:  ${new Date().toLocaleString()}
+      `.trim().replace(/\n/g, '<br>');
+
+      // Load Payments & Workspace too
+      loadPaymentStatus();
+      loadWorkspaceStatus();
+    } catch(e) {
+      notify('Failed to load Infra status', 'var(--red)');
+    }
+  }
+
+  async function loadPaymentStatus(){
+    try {
+      const r = await fetch(API+'/payments/status');
+      const d = await r.json();
+      const el = document.getElementById('payment-status');
+      el.innerHTML = `
+        <div class="flex justify-between mb-2"><span>Total Revenue</span><span class="text-gold font-bold">$${d.total_revenue.toLocaleString()}</span></div>
+        <div class="flex justify-between mb-2"><span>Transactions</span><span>${d.transaction_count}</span></div>
+        <div class="flex justify-between"><span>Status</span><span class="text-green-400">${d.status}</span></div>
+      `;
+    } catch(e) {}
+  }
+
+  async function loadWorkspaceStatus(){
+    try {
+      const r = await fetch(API+'/workspace/status');
+      const d = await r.json();
+      const el = document.getElementById('workspace-status');
+      el.innerHTML = `
+        <div class="flex justify-between mb-2"><span>Google Drive</span><span class="${d.drive_connected?'text-green-400':'text-red-400'}">${d.drive_connected?'Connected':'Offline'}</span></div>
+        <div class="flex justify-between mb-2"><span>Google Calendar</span><span class="${d.calendar_connected?'text-green-400':'text-red-400'}">${d.calendar_connected?'Connected':'Offline'}</span></div>
+        <div class="flex justify-between"><span>Access Level</span><span>${d.access || 'Owner'}</span></div>
+      `;
+    } catch(e) {}
+  }
+
+  async function infraCmd(action){
+    const r = await fetch(API+'/infra/commands', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action})
+    });
+    const d = await r.json();
+    if(d.ok) notify('Infrastructure command successful: ' + (d.node_id || ''), 'var(--gold)');
+    else notify('Command failed', 'var(--red)');
+    loadInfraStatus();
+  }
+
+  async function loadRepoActivity(){
+    try {
+      const r = await fetch(API+'/github/repo');
+      const d = await r.json();
+      
+      const cl = document.getElementById('repo-commits-list');
+      const il = document.getElementById('repo-issues-list');
+
+      if(d.error) {
+         cl.innerHTML = emptyState('❌', d.error);
+         il.innerHTML = emptyState('❌', d.error);
+         return;
+      }
+
+      cl.innerHTML = d.commits.map(c => `
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(c.commit.message)}</div>
+            <div class="row-meta">${esc(c.author.login)} · ${fmtTime(c.commit.author.date)}</div>
+          </div>
+          <a href="${c.html_url}" target="_blank" class="test-btn">↗</a>
+        </div>
+      `).join('') || emptyState('🐙', 'No commits found');
+
+      il.innerHTML = d.issues.map(i => `
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(i.title)}</div>
+            <div class="row-meta">#${i.number} · ${i.state} · ${fmtTime(i.created_at)}</div>
+          </div>
+          <a href="${i.html_url}" target="_blank" class="test-btn">↗</a>
+        </div>
+      `).join('') || emptyState('🛠️', 'No issues found');
+
+    } catch(e) {
+      notify('Failed to load Repo activity', 'var(--red)');
+    }
+  }
+
+  /* ─────────────────────── STATS ─────────────────────────── */
+  async function loadStats(){
+    try{
+      const r = await fetch(API+'/stats'); if(!r.ok) throw new Error();
+      const d = await r.json();
+      document.getElementById('s-messages').textContent = d.messages_logged??0;
+      document.getElementById('s-memory').textContent   = d.memory_facts??0;
+      document.getElementById('s-entities').textContent  = d.entities_mapped??0;
+      document.getElementById('s-relations').textContent = d.relations??0;
+      document.getElementById('s-bots').textContent      = d.active_bots??0;
+      document.getElementById('s-cycles').textContent    = d.cycles_executed??0;
+      document.getElementById('s-archives').textContent  = d.cold_archives??0;
+      document.getElementById('s-notes').textContent     = d.notes_count??0;
+      document.getElementById('notes-nav-badge').textContent = d.notes_count??0;
+      const ok = d.agent_status === 'RUNNING';
+      document.getElementById('sidebar-dot').style.background = ok ? '#34d399' : '#fbbf24';
+      document.getElementById('sidebar-status').textContent = d.agent_status || 'IDLE';
+      document.getElementById('ts-update').textContent = `Synced ${new Date().toLocaleTimeString()}`;
+    }catch{
+      document.getElementById('sidebar-dot').style.background = '#f87171';
+      document.getElementById('sidebar-status').textContent = 'OFFLINE';
+      document.getElementById('ts-update').textContent = 'API offline';
+      notify('API offline — run: python dashboard_api.py','#f87171');
+    }
+  }
+
+  /* ─────────────────────── MODAL ─────────────────────────── */
+  function openModal(title, content){
+    document.getElementById('modal-title').textContent = title.toUpperCase();
+    document.getElementById('modal-body').innerHTML = `<div style="white-space:pre-wrap;">${esc(content)}</div>`;
+    document.getElementById('btn-modal-copy').onclick = () => copyText(content);
+    document.getElementById('modal-overlay').style.display = 'flex';
+  }
+  function closeModal(){ document.getElementById('modal-overlay').style.display = 'none'; }
+
+  /* ─────────────────────── OVERVIEW ACTIVITY FEED ─────────────────────────── */
+  async function loadRecentActivity(){
+    try {
+      const r = await fetch(API+'/activity'); if(!r.ok) return;
+      const data = await r.json();
+      const el = document.getElementById('main-activity-feed');
+      if(!data.length){ el.innerHTML = emptyState('📡','No activity recorded yet.'); return; }
+      
+      const icons = { message: '💬', memory: '🧠', terminal: '⌨️' };
+      const colors = { message: 'rgba(52,211,153', memory: 'rgba(167,139,250', terminal: 'rgba(0,240,255' };
+      
+      el.innerHTML = '';
+      data.forEach((a, idx) => {
+        const c = colors[a.type] || 'rgba(255,255,255';
+        const item = document.createElement('div');
+        item.className = 'activity-item list-row reveal';
+        item.onclick = () => openModal(`${a.type} detail`, a.content);
+        item.innerHTML = `
+            <div class="act-icon-wrap" style="border-color:${c},.2); background:${c},.05); padding: 10px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+              ${icons[a.type]||'•'}
+            </div>
+            <div class="act-body flex-1">
+              <div class="act-header flex justify-between mb-1">
+                <div class="act-category flex items-center gap-2 font-bold text-xs">
+                  ${esc(a.category)} 
+                  <span class="act-type-tag text-[8px] px-2 py-0.5 rounded-full" style="background:${c},.1); color:${c},.9); border: 1px solid ${c},.2);">${esc(a.type)}</span>
+                </div>
+                <div class="act-ts text-[10px] opacity-40">${fmtTimeShort(a.timestamp)}</div>
+              </div>
+              <div class="act-content text-sm opacity-80 line-clamp-2">${esc(a.content)}</div>
+            </div>
+        `;
+        el.appendChild(item);
+      });
+      setTimeout(observeAll, 100);
+    } catch(e) {}
+  }
+
+  /* ─────────────────────── FULL LOG ─────────────────────────── */
+  async function loadFullLog(){
+    try{
+      const r = await fetch(API+'/logs'); if(!r.ok) return;
+      const d = await r.json();
+      const lines = d.lines||[];
+      document.getElementById('log-lines-badge').textContent = lines.length+' lines';
+      const el = document.getElementById('full-log');
+      el.innerHTML = lines.map(l=>`<span class="${logClass(l)}">${esc(l)}</span>`).join('\n');
+      el.scrollTop = el.scrollHeight;
+    }catch{}
+  }
+
+  /* ─────────────────────── MESSAGES ─────────────────────────── */
+  async function loadMessages(){
+    try{
+      const r = await fetch(API+'/messages'); const data = await r.json();
+      document.getElementById('msg-badge').textContent = data.length;
+      document.getElementById('mem-msg-badge').textContent = data.length;
+      if(!data.length){ 
+        const empty = emptyState('💬','No messages yet');
+        document.getElementById('messages-list').innerHTML=empty;
+        if(document.getElementById('mem-messages-list')) document.getElementById('mem-messages-list').innerHTML=empty;
+        return; 
+      }
+      const html = data.map(m=>{
+        const txt = m.content||'';
+        return `<div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(txt)}</div>
+            <div class="row-meta">${fmtTimeShort(m.timestamp)}</div>
+          </div>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(txt)})">Copy</button>
+          <span class="role-tag ${m.role==='user'?'role-user':'role-assistant'}">${esc(m.role)}</span>
+        </div>`;
+      }).join('');
+      document.getElementById('messages-list').innerHTML = html;
+      if(document.getElementById('mem-messages-list')) document.getElementById('mem-messages-list').innerHTML = html;
+    }catch{}
+  }
+
+  /* ─────────────────────── MEMORY ─────────────────────────── */
+  async function loadMemory(){
+    try{
+      const r = await fetch(API+'/memory'); const data = await r.json();
+      document.getElementById('mem-facts-badge').textContent = data.length;
+      const el = document.getElementById('mem-facts-list');
+      if(!data.length){ el.innerHTML=emptyState('💾','No facts'); return; }
+      el.innerHTML = data.map(m=>`
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text">${esc(m.fact)}</div>
+            <div class="row-meta">${fmtTimeShort(m.timestamp)}</div>
+          </div>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(m.fact)})">Copy</button>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── ENTITIES ─────────────────────────── */
+  const ENT_PALETTE = ['rgba(0,240,255','rgba(167,139,250','rgba(52,211,153','rgba(251,191,36','rgba(248,113,113','rgba(244,114,182'];
+  async function loadEntities(){
+    try{
+      const r = await fetch(API+'/entities'); const data = await r.json();
+      document.getElementById('ent-badge').textContent = data.length;
+      const el = document.getElementById('entity-canvas');
+      if(!data.length){ el.innerHTML=emptyState('📡','No entities yet'); return; }
+      el.innerHTML='';
+      const W=el.offsetWidth||700, H=260;
+      const placed=[];
+      data.slice(0,20).forEach((ent,i)=>{
+        const c=ENT_PALETTE[i%ENT_PALETTE.length];
+        const node=document.createElement('div');
+        node.className='ent-node';
+        node.textContent=ent.name;
+        node.style.background=`${c},.1)`;
+        node.style.border=`1px solid ${c},.3)`;
+        node.style.color=`${c},.95)`;
+        node.style.animationDelay=(i*60)+'ms';
+        node.onclick = () => copyText(ent.name + ": " + ent.description);
+        let x,y,t=0;
+        do{ x=14+Math.random()*(W-170); y=14+Math.random()*(H-48); t++; }
+        while(t<40&&placed.some(p=>Math.abs(p.x-x)<150&&Math.abs(p.y-y)<44));
+        placed.push({x,y});
+        node.style.left=x+'px'; node.style.top=y+'px';
+        el.appendChild(node);
+      });
+    }catch{}
+  }
+
+  /* ─────────────────────── RELATIONS ─────────────────────────── */
+  async function loadRelations(){
+    try{
+      const r = await fetch(API+'/relations'); const data = await r.json();
+      document.getElementById('rel-badge').textContent = data.length;
+      const el = document.getElementById('relations-list');
+      if(!data.length){ el.innerHTML=emptyState('🔗','No relations'); return; }
+      el.innerHTML = data.map(rel=>`
+        <div class="rel-row activity-item" onclick="openModal('Relation Intelligence', '${esc(rel.source)} ${esc(rel.relation_type)} ${esc(rel.target)} strength: ${rel.strength}')">
+          <span class="rel-src">${esc(rel.source)}</span>
+          <span class="rel-arr">→</span>
+          <span class="rel-type">${esc(rel.relation_type)}</span>
+          <span class="rel-str">${(rel.strength||0).toFixed(2)}</span>
+          <button class="copy-btn" style="margin-left:auto" onclick="event.stopPropagation(); copyText('${esc(rel.source)} ${esc(rel.relation_type)} ${esc(rel.target)}')">Copy</button>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── BLUEPRINTS ─────────────────────────── */
+  async function loadBlueprints(){
+    try{
+      const r = await fetch(API+'/blueprints'); const data = await r.json();
+      const el = document.getElementById('blueprints-list');
+      document.getElementById('bp-badge').textContent = data.length;
+      if(!data.length){ el.innerHTML=emptyState('📦','No blueprints'); return; }
+      el.innerHTML = data.map((bp,i)=>`
+        <div class="list-row" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-size:9px;font-weight:700;color:var(--purple);letter-spacing:1px;text-transform:uppercase;">Blueprint #${i+1} · ${fmtTimeShort(bp.timestamp)}</div>
+            <button class="copy-btn" onclick="copyText(${JSON.stringify(bp.fact)})">Copy Blueprint</button>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.5;">${esc(bp.fact)}</div>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── ARCHIVES ─────────────────────────── */
+  async function loadArchives(){
+    try{
+      const r = await fetch(API+'/archives'); const data = await r.json();
+      const el = document.getElementById('archives-list');
+      document.getElementById('arch-badge').textContent = data.length;
+      if(!data.length){ el.innerHTML=emptyState('🗜️','No archives'); return; }
+      el.innerHTML = data.map(a=>`
+        <div class="list-row">
+          <div class="row-main">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--amber);margin-bottom:4px;">${esc(a.file)}</div>
+            <div style="font-size:11px;color:var(--muted);">Cycle ${a.data?.cycle??'?'}</div>
+          </div>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(JSON.stringify(a.data,null,2))})">Copy JSON</button>
+        </div>`).join('');
+    }catch{}
+  }
+
+  /* ─────────────────────── NOTES ─────────────────────────── */
+  async function loadNotes(){
+    try{
+      const r = await fetch(API+'/notes'); const data = await r.json();
+      document.getElementById('s-notes').textContent = data.length;
+      document.getElementById('notes-nav-badge').textContent = data.length;
+      if(!data.length){ document.getElementById('notes-grid').innerHTML=emptyState('📝','No notes yet — create one above!'); return; }
+      document.getElementById('notes-grid').innerHTML = data.map(n=>`
+        <div class="note-card">
+          <div class="note-accent" style="background:${esc(n.color)};"></div>
+          <div class="note-title">${esc(n.title)}</div>
+          <div class="note-content">${esc(n.content||'')}</div>
+          <div class="note-footer">
+            <div class="note-date">${fmtTimeShort(n.updated_at)}</div>
+            <button class="note-del" onclick="deleteNote(${n.id})" title="Delete">✕</button>
+          </div>
+        </div>`).join('');
+    }catch(e){ notify('Notes load error','#f87171'); }
+  }
+
+  async function createNote(){
+    const title   = document.getElementById('note-title').value.trim() || 'Untitled';
+    const content = document.getElementById('note-content').value.trim();
+    const color   = document.getElementById('note-color').value;
+    try{
+      const r = await fetch(API+'/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,content,color})});
+      if(!r.ok) throw new Error();
+      document.getElementById('note-title').value='';
+      document.getElementById('note-content').value='';
+      notify('Note saved ✓','#34d399');
+      loadNotes();
+    }catch{ notify('Failed to save note','#f87171'); }
+  }
+
+  async function deleteNote(id){
+    try{
+      await fetch(API+'/notes/'+id,{method:'DELETE'});
+      notify('Note deleted','#fbbf24');
+      loadNotes();
+    }catch{}
+  }
+
+  /* ─────────────────────── KEYS ─────────────────────────── */
+  const keyIcons = {OpenAI:'🟢',Anthropic:'🔺',Groq:'⚡',Google:'🔵','Google AI':'🔵',Pinecone:'🌲',Supabase:'⚡',Discord:'🎮',Stripe:'💳',GitHub:'🐙',Slack:'💼',HuggingFace:'🤗',ElevenLabs:'🎙️',Vercel:'▲',Brave:'🦁',Firecrawl:'🔥',Venice:'🎨',OpenRouter:'🌐'};
+  const testableServices = ['openai','groq','anthropic','pinecone','supabase','discord','github','elevenlabs','stripe'];
+
+  async function loadKeys(){
+    try{
+      const r = await fetch(API+'/keys'); const data = await r.json();
+      document.getElementById('keys-grid').innerHTML = data.map(k=>{
+        const icon  = keyIcons[k.name] || '🔑';
+        const svc   = k.name.toLowerCase().replace(/ /g,'');
+        const testable = testableServices.includes(svc);
+        return `<div class="key-card" id="kc-${svc}">
+          <div class="key-logo">${icon}</div>
+          <div class="key-info">
+            <div class="key-name">${esc(k.name)}</div>
+            <div class="key-masked">${esc(k.masked)}</div>
+          </div>
+          <span class="key-set-badge ${k.set?'key-set':'key-unset'}">${k.set?'SET':'UNSET'}</span>
+          ${testable&&k.set?`<button class="test-btn" id="tb-${svc}" onclick="testSvc('${svc}',this)">Test</button>`:''}
+        </div>`;
+      }).join('');
+    }catch{ notify('Could not load keys','#f87171'); }
+  }
+
+  async function testSvc(svc, btn){
+    btn.textContent = '…';
+    btn.className = 'test-btn';
+    try{
+      const r = await fetch(API+`/services/test/${svc}`,{method:'POST'});
+      const d = await r.json();
+      btn.textContent = d.ok ? '✓ '+( d.msg||'OK') : '✗ '+(d.msg||'Fail');
+      btn.className = 'test-btn '+(d.ok?'ok':'fail');
+      notify(`${svc}: ${d.ok?'connected':'failed'} — ${d.msg||''}`, d.ok?'#34d399':'#f87171');
+    }catch{
+      btn.textContent = '✗ Error';
+      btn.className = 'test-btn fail';
+    }
+  }
+
+  /* ─────────────────────── CHAT ─────────────────────────── */
+  async function sendChat(){
+    const inp = document.getElementById('chat-input');
+    const msg = inp.value.trim();
+    if(!msg) return;
+    inp.value = '';
+
+    const box = document.getElementById('chat-messages');
+    // Add user message
+    box.innerHTML += `<div class="chat-msg user">${esc(msg)}</div>`;
+    box.scrollTop = box.scrollHeight;
+
+    // Thinking indicator
+    const thinkId = 'think-'+Date.now();
+    box.innerHTML += `<div class="chat-msg assistant" id="${thinkId}"><div class="chat-thinking"><div class="think-dot"></div><div class="think-dot"></div><div class="think-dot"></div></div></div>`;
+    box.scrollTop = box.scrollHeight;
+
+    try{
+      const r = await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+      const d = await r.json();
+      const t = document.getElementById(thinkId);
+      if(t){ t.innerHTML = esc(d.content)+`<div class="chat-msg-meta">${esc(d.model)} · ${fmtTimeShort(d.timestamp)}</div>`; }
+      box.scrollTop = box.scrollHeight;
+    }catch{
+      const t = document.getElementById(thinkId);
+      if(t){ t.innerHTML = '⚠️ Chat API unavailable. Set GROQ_API_KEY or OPENAI_API_KEY in .env'; }
+    }
+  }
+
+  function chatKey(e){
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+  }
+
+  /* ─────────────────────── DISCORD MULTI-CHANNEL ─────────────────────────── */
+  let activeBot = 'douglas';
+  function selBot(bot){
+    activeBot = bot;
+    document.querySelectorAll('#page-discord .tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('btn-bot-'+bot).classList.add('active');
+    document.getElementById('active-bot-name').textContent = bot.toUpperCase();
+    notify(`Switched to ${bot} channel`,'#D4AF37');
+  }
+
+  async function discordSend(){
+    const msg = document.getElementById('discord-input').value.trim();
+    const botType = document.getElementById('discord-bot-type').value;
+    const resEl = document.getElementById('discord-result');
+    if(!msg) return;
+    try{
+      const r = await fetch(API+'/discord/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,bot_type:botType})});
+      const d = await r.json();
+      resEl.textContent = d.ok?'✓ Sent':'✗ Error';
+      resEl.style.color = d.ok?'var(--green)':'var(--red)';
+      if(d.ok) { document.getElementById('discord-input').value=''; }
+    }catch{ resEl.textContent='✗ Connect error'; resEl.style.color='var(--red)'; }
+  }
+
+  async function discordSendBig(){
+    const msg    = document.getElementById('discord-msg-big').value.trim();
+    const resEl  = document.getElementById('discord-big-result');
+    if(!msg){ notify('Enter message payload','#fbbf24'); return; }
+    resEl.textContent = 'Transmitting…';
+    try{
+      const r = await fetch(API+'/discord/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,bot_type:activeBot})});
+      const d = await r.json();
+      resEl.textContent = d.ok?'✓ TRANSMISSION SUCCESS':'✗ '+d.msg;
+      resEl.style.color = d.ok?'var(--green)':'var(--red)';
+      if(d.ok) notify(`Broadcast sent via ${activeBot} ✓`,'#34d399');
+    }catch(e){ resEl.textContent='Error: '+e.message; resEl.style.color='var(--red)'; }
+  }
+
+  async function testDiscord(){
+    const btn = document.getElementById('discord-test-btn');
+    btn.textContent='…';
+    try{
+      const r = await fetch(API+`/services/test/discord`,{method:'POST'});
+      const d = await r.json();
+      btn.textContent = d.ok?'✓ ONLINE':'✗ FAIL';
+      btn.className = 'test-btn '+(d.ok?'ok':'fail');
+      notify(`Discord: `+(d.ok?'online':'failed'),'#34d399');
+    }catch{ btn.textContent='✗ Error'; btn.className='test-btn fail'; }
+  }
+
+  /* ─────────────────────── MEMORY TABS ─────────────────────────── */
+  function memTab(tab){
+    document.querySelectorAll('#page-memory .tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#page-memory .tab-content').forEach(c=>c.classList.remove('active'));
+    document.querySelector(`#page-memory .tab-btn[onclick*="${tab}"]`).classList.add('active');
+    document.getElementById('mem-tab-'+tab).classList.add('active');
+    if(tab==='facts') loadMemory();
+    if(tab==='messages') loadMessages();
+    if(tab==='blueprints') loadBlueprints();
+    if(tab==='archives') loadArchives();
+  }
+
+  function copyText(txt){
+    navigator.clipboard.writeText(txt).then(()=>{
+      notify('Copied to clipboard ✓','#34d399');
+    }).catch(()=>{
+      // Fallback
+      const el = document.createElement('textarea');
+      el.value = txt; document.body.appendChild(el); el.select();
+      document.execCommand('copy'); document.body.removeChild(el);
+      notify('Copied to clipboard ✓','#34d399');
+    });
+  }
+
+  /* ─────────────────────── TERMINAL ─────────────────────────── */
+  async function runTermCmd(){
+    const inp = document.getElementById('term-input');
+    const cmd = inp.value.trim();
+    if(!cmd) return;
+    const out = document.getElementById('term-output');
+    termHistory.unshift(cmd);
+    termHistIdx = -1;
+    inp.value = '';
+    out.innerHTML += `\n<span style="color:var(--cyan);font-weight:700;">${document.querySelector('.term-prompt').textContent} ${esc(cmd)}</span>\n`;
+    out.scrollTop = out.scrollHeight;
+    try{
+      const r = await fetch(API+'/terminal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})});
+      const d = await r.json();
+      const color = d.exit_code===0?'rgba(255,255,255,.6)':'var(--red)';
+      out.innerHTML += `<span style="color:${color};">${esc(d.output)}</span>\n`;
+      if(d.cwd){
+        // Update prompt with folder name or full path
+        const folder = d.cwd.split(/[\\/]/).pop() || d.cwd;
+        document.querySelector('.term-prompt').textContent = `[${folder}] →`;
+        document.querySelector('.term-prompt').title = d.cwd;
+      }
+      out.scrollTop = out.scrollHeight;
+      loadTermHistory();
+    }catch(e){
+      out.innerHTML += `<span style="color:var(--red);">Error: ${esc(e.message)}</span>\n`;
+    }
+  }
+
+  function termKey(e){
+    const inp = document.getElementById('term-input');
+    if(e.key==='Enter'){ e.preventDefault(); runTermCmd(); }
+    else if(e.key==='ArrowUp'){
+      termHistIdx = Math.min(termHistIdx+1, termHistory.length-1);
+      inp.value = termHistory[termHistIdx]||'';
+    }
+    else if(e.key==='ArrowDown'){
+      termHistIdx = Math.max(termHistIdx-1, -1);
+      inp.value = termHistIdx>=0?(termHistory[termHistIdx]||''):'';
+    }
+  }
+
+  function clearTerminal(){
+    document.getElementById('term-output').innerHTML = 'Terminal cleared.\n';
+  }
+
+  async function loadTermHistory(){
+    try{
+      const r = await fetch(API+'/terminal/history'); const data = await r.json();
+      document.getElementById('term-hist-badge').textContent = data.length;
+      document.getElementById('term-history').innerHTML = data.length ? data.map(h=>`
+        <div class="list-row">
+          <div class="row-main">
+            <div class="row-text" style="font-family:var(--mono);font-size:10.5px;">${esc(h.command)}</div>
+            <div class="row-meta">${fmtTimeShort(h.timestamp)} · exit ${h.exit_code}</div>
+          </div>
+          <button class="test-btn" onclick="rerunCmd(${JSON.stringify(h.command)})">↩</button>
+        </div>`).join('') : emptyState('','No history');
+    }catch{}
+  }
+
+  async function loadCmdPresets(){
+    try{
+      const r = await fetch(API+'/terminal/commands'); const data = await r.json();
+      document.getElementById('cmd-presets').innerHTML = data.map(c=>`
+        <div class="cmd-row" onclick="injectCmd(${JSON.stringify(c.cmd)})">
+          <span class="cmd-code">${esc(c.cmd)}</span>
+          <span class="cmd-desc">${esc(c.desc)}</span>
+        </div>`).join('');
+    }catch{}
+  }
+
+  function injectCmd(cmd){
+    document.getElementById('term-input').value = cmd;
+    document.getElementById('term-input').focus();
+  }
+  function rerunCmd(cmd){ injectCmd(cmd); runTermCmd(); }
+
+  /* ─────────────────────── GOOGLE MAPS ─────────────────────────── */
+  let map, mapLoaded = false;
+  let mapMarkers = [];
+
+  async function initMap() {
+    if (mapLoaded) return;
+    try {
+      const cfg = await fetch(API+'/map/config').then(r=>r.json());
+      if (!cfg.key) {
+        document.getElementById('map-loader').innerHTML = `<div style="color:var(--red); font-size:12px;">GOOGLE_API_KEY NOT SET</div>`;
+        return;
+      }
+
+      // Load SDK
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${cfg.key}&callback=startMapRendering&libraries=geometry`;
+      script.async = true;
+      script.defer = true;
+      window.startMapRendering = () => {
+        const mapOptions = {
+          center: cfg.center,
+          zoom: 11,
+          styles: [
+            { "elementType": "geometry", "stylers": [ { "color": "#12121e" } ] },
+            { "elementType": "labels.text.stroke", "stylers": [ { "color": "#12121e" } ] },
+            { "elementType": "labels.text.fill", "stylers": [ { "color": "#746855" } ] },
+            { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] },
+            { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [ { "color": "#d59563" } ] },
+            { "featureType": "poi.park", "elementType": "geometry", "stylers": [ { "color": "#18182a" } ] },
+            { "featureType": "road", "elementType": "geometry", "stylers": [ { "color": "#212133" } ] },
+            { "featureType": "road", "elementType": "geometry.stroke", "stylers": [ { "color": "#1c1c2b" } ] },
+            { "featureType": "road", "elementType": "labels.text.fill", "stylers": [ { "color": "#8a8a8a" } ] },
+            { "featureType": "water", "elementType": "geometry", "stylers": [ { "color": "#0e0e18" } ] }
+          ],
+          disableDefaultUI: true,
+          zoomControl: true,
+        };
+        map = new google.maps.Map(document.getElementById('google-map'), mapOptions);
+        mapLoaded = true;
+        document.getElementById('map-loader').style.display = 'none';
+        loadMapMarkers();
+      };
+      document.head.appendChild(script);
+    } catch(e) {
+      document.getElementById('map-loader').innerHTML = `<div style="color:var(--red); font-size:12px;">Map initialization failed</div>`;
+    }
+  }
+
+  async function loadMapMarkers() {
+    if (!mapLoaded) return;
+    try {
+      const res = await fetch(API+'/map/markers');
+      const data = await res.json();
+      
+      // Clear old
+      mapMarkers.forEach(m => m.setMap(null));
+      mapMarkers = [];
+
+      data.forEach(m => {
+        const marker = new google.maps.Marker({
+          position: { lat: m.lat, lng: m.lng },
+          map: map,
+          title: m.name,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: m.type==='lead'?'#fbbf24':'#00f0ff',
+            fillOpacity: 0.9,
+            strokeColor: '#fff',
+            strokeWeight: 1,
+            scale: 8
+          }
+        });
+
+        marker.addListener('click', () => {
+          showIntel(m);
+        });
+        mapMarkers.push(marker);
+      });
+    } catch(e) {}
+  }
+
+  function showIntel(m) {
+    const el = document.getElementById('map-intel-overlay');
+    document.getElementById('intel-entity').textContent = m.entity || 'Entity Intel';
+    document.getElementById('intel-name').textContent = m.name;
+    document.getElementById('intel-body').textContent = m.intel || 'No intelligence gathered yet.';
+    el.style.display = 'block';
+  }
+
+  function closeIntel() {
+    document.getElementById('map-intel-overlay').style.display = 'none';
+  }
+
+  /* ─────────────────────── REFRESH ALL ─────────────────────────── */
+  async function refreshAll(){
+    updateSovereignData();
+    await Promise.allSettled([
+      loadStats(), loadRecentActivity(),
+    ]);
+
+    // Update mini-log
+    try {
+      const r = await fetch(API+'/logs');
+      const d = await r.json();
+      const el = document.getElementById('mini-log');
+      if(el) {
+        el.innerHTML = d.lines.slice(-30).map(l => `<div class="${logClass(l)}">${esc(l)}</div>`).join('');
+        el.scrollTop = el.scrollHeight;
+      }
+    } catch(e) {}
+
+    // Load current page data
+    if(currentPage==='overview') loadRecentActivity();
+    if(currentPage==='terminal') loadTermHistory();
+    if(currentPage==='notes') loadNotes();
+    if(currentPage==='keys') loadKeys();
+    if(currentPage==='telegram') fetchTgUpdates();
+    if(currentPage==='entities') loadEntities(), loadRelations();
+    if(currentPage==='memory') loadMemory(), loadBlueprints(), loadArchives();
+    if(currentPage==='logs') loadFullLog();
+  }
+
+  /* ─────────────────────── SOVEREIGN B.L.A.S.T. LOGIC ─────────────────────────── */
+  const AGENT_NODES = [
+    { id: 'brain',     label: 'SOVEREIGN BRAIN', x: 400, y: 250 },
+    { id: 'architect', label: 'PRODUCT ARCHITECT', x: 400, y: 100 },
+    { id: 'hunter',    label: 'BILLIONAIRE HUNTER', x: 600, y: 150 },
+    { id: 'auditor',   label: 'AUDITOR', x: 200, y: 150 },
+    { id: 'executor',  label: 'EXECUTOR', x: 600, y: 350 },
+    { id: 'sentinel',  label: 'SENTINEL', x: 200, y: 350 },
+    { id: 'hermes',    label: 'HERMES', x: 400, y: 400 },
+    { id: 'douglas',   label: 'DOUGLAS', x: 720, y: 250 },
+    { id: 'apex',      label: 'APEX', x: 80, y: 250 },
+    { id: 'nexus',     label: 'NEXUS', x: 550, y: 80 },
+    { id: 'echo',      label: 'ECHO', x: 250, y: 80 }
+  ];
+
+  function initAgentHive() {
+    const nodesG = document.getElementById('hive-nodes');
+    const linksG = document.getElementById('hive-links');
+    if(!nodesG || !linksG) return;
+    nodesG.innerHTML = ''; linksG.innerHTML = '';
+    AGENT_NODES.forEach(n => {
+      if(n.id === 'brain') return;
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', 400); l.setAttribute('y1', 250);
+      l.setAttribute('x2', n.x); l.setAttribute('y2', n.y);
+      l.setAttribute('stroke', 'rgba(255,215,0,0.1)');
+      linksG.appendChild(l);
+    });
+    AGENT_NODES.forEach(n => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      pulse.setAttribute('cx', n.x); pulse.setAttribute('cy', n.y);
+      pulse.setAttribute('r', 12); pulse.classList.add('agent-pulse');
+      pulse.id = `pulse-${n.id}`;
+      const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circ.setAttribute('cx', n.x); circ.setAttribute('cy', n.y);
+      circ.setAttribute('r', 8); circ.classList.add('agent-node');
+      circ.id = `node-${n.id}`;
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', n.x); txt.setAttribute('y', n.y + 25);
+      txt.setAttribute('fill', 'rgba(255,255,255,0.4)');
+      txt.setAttribute('font-size', '8'); txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-family', 'var(--font-heading)');
+      txt.textContent = n.label;
+      g.appendChild(pulse); g.appendChild(circ); g.appendChild(txt);
+      nodesG.appendChild(g);
+    });
+  }
+
+  async function updateSovereignData() {
+    try {
+      const tickR = await fetch(API+'/revenue_ticker');
+      const tickD = await tickR.json();
+      document.getElementById('ticker-roi').textContent = tickD.roi;
+      document.getElementById('ticker-cvr').textContent = tickD.cvr;
+      document.getElementById('ticker-profit').textContent = tickD.profit;
+      document.getElementById('ticker-nodes').textContent = `${tickD.deployments} TOTAL DEPLOYS`;
+      const hiveR = await fetch(API+'/agent_hive');
+      const hiveD = await hiveR.json();
+      hiveD.forEach(agent => {
+        const el = document.getElementById(`node-${agent.id}`);
+        const pl = document.getElementById(`pulse-${agent.id}`);
+        if(el) {
+          if(['EXECUTING','THINKING','ACTIVE'].includes(agent.status)) {
+            el.classList.add('active'); pl.style.opacity = '0.6';
+          } else if(agent.status === 'ALERT') {
+            el.style.stroke = 'var(--pivot-red)'; pl.style.fill = 'var(--pivot-red)'; pl.style.opacity = '1';
+            triggerPivotAlert("LOW ROI DETECTED - AUDITOR TRIGGERED HARD PIVOT");
+          } else {
+            el.classList.remove('active'); pl.style.opacity = '0';
+          }
+        }
+      });
+      const logR = await fetch(API+'/logs');
+      const logD = await logR.json();
+      const moneyStream = document.getElementById('money-stream-log');
+      const sales = logD.lines.filter(l => l.includes('SALE') || l.includes('REVENUE') || l.includes('Monetization'));
+      if(sales.length > 0) {
+        moneyStream.innerHTML = sales.reverse().map(s => `
+          <div class="stream-entry ${s.includes('SALE')?'high-value':''}">
+            <div class="text-[10px] text-muted opacity-50">${new Date().toLocaleTimeString()}</div>
+            <div>${esc(s)}</div>
+          </div>
+        `).join('');
+      }
+    } catch(e) {}
+  }
+
+  function triggerPivotAlert(reason) {
+    const el = document.getElementById('pivot-alert-overlay');
+    document.getElementById('pivot-reason').textContent = reason;
+    el.classList.add('active');
+  }
+
+  function closePivotAlert() {
+    document.getElementById('pivot-alert-overlay').classList.remove('active');
+  }
+
+  /* ─────────────────────── REFRESH ALL ─────────────────────────── */
+  async function refreshAll(){
+    updateSovereignData();
+    await Promise.allSettled([
+      loadStats(), loadRecentActivity(),
+    ]);
+
+    // Load current page data
+    if(currentPage==='overview') loadRecentActivity();
+    if(currentPage==='terminal') loadTermHistory();
+    if(currentPage==='notes') loadNotes();
+    if(currentPage==='keys') loadKeys();
+    if(currentPage==='telegram') fetchTgUpdates();
+    if(currentPage==='entities') loadEntities(), loadRelations();
+    if(currentPage==='memory') loadMemory(), loadBlueprints(), loadArchives();
+    if(currentPage==='logs') loadFullLog();
+  }
+
+  /* ─────────────────────── BOOT ─────────────────────────── */
+  initAgentHive();
+  refreshAll();
+  setInterval(refreshAll, 8000);
+  setInterval(updateSovereignData, 2000);
+  loadCmdPresets();
+</script>
+
+<!-- PIVOT ALERT OVERLAY -->
+<div id="pivot-alert-overlay" class="pivot-alert-overlay">
+   <div class="pivot-title gold-glow-text">HARD PIVOT</div>
+   <div class="text-white text-2xl font-bold uppercase tracking-[0.4em] mb-8">Auditor has terminated current niche</div>
+   <div class="text-lime text-lg font-mono" id="pivot-reason">ROI < 1% | SHIFTING ALL RESOURCES TO WINNING VARIANT</div>
+   <button onclick="closePivotAlert()" class="mt-12 px-12 py-4 bg-gold text-black font-black uppercase tracking-widest hover:bg-white transition-colors">Acknowledge & Sync</button>
+</div>
+
+<!-- NOTIF CONTAINER -->
+<div id="notif"></div>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.pnp
+.pnp.*
+
+# Environment & secrets
+.env
+.env.local
+.env.*
+!.env.example
+
+# Build outputs
+.next/
+/out/
+/build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs
+*.log
+agent_progress.log
+dashboard_api.log
+dashboard_api_err.log
+output.log
+
+# Database (has live data — use migrations not raw db)
+gravity-claw.db
+
+# Temp / cache
+.tmp/
+.agent/
+.DS_Store
+*.pem
+
+# Vercel
+.vercel
+
+# MCP config files contain live API keys — never commit
+.mcp.json
+mcp_config.json
